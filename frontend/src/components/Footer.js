@@ -141,16 +141,6 @@ const Footer = ({ language }) => {
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-24 right-scroll-bar-position z-[70]">
-        <button
-          onClick={() => scrollToSection('contact')}
-          className="bg-red-accent hover-red-accent text-white p-4 rounded-full shadow-lg glow-red transition-all duration-300 hover:scale-110"
-          title={language === 'ka' ? 'დაგვიკავშირდით' : 'Contact Us'}
-        >
-          <Phone className="w-6 h-6" />
-        </button>
-      </div>
     </footer>
   );
 };

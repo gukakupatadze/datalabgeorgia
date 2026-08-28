@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const configuredUrl = process.env.REACT_APP_CRM_API_URL || 'http://localhost:8000/api';
+const configuredUrl = process.env.REACT_APP_CRM_API_URL || '/api';
 let baseURL = configuredUrl;
 try {
   const url = new URL(configuredUrl, window.location.origin);

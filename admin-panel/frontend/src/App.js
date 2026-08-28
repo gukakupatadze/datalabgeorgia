@@ -41,7 +41,7 @@ function App() {
     <ThemeProvider>
       <I18nProvider>
         <div className="App">
-          <BrowserRouter>
+          <BrowserRouter basename={process.env.PUBLIC_URL || undefined}>
             <AuthProvider>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />

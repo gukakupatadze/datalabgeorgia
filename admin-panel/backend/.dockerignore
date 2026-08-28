@@ -1,0 +1,11 @@
+.venv
+.venv*
+__pycache__
+*.py[cod]
+.pytest_cache
+.env
+.env.*
+*_test.py
+run_local_tests.py
+requirements-dev.txt
+.DS_Store

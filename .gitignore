@@ -5,10 +5,13 @@
 *.env.*
 !.env.example
 !**/.env.example
+!deploy/production.env.example
 
 # JavaScript dependencies
 node_modules/
 **/node_modules/
+.pnpm-store/
+**/.pnpm-store/
 
 # Generated frontend bundles
 build/
@@ -40,6 +43,7 @@ __pycache__/
 .vscode/
 .cache/
 coverage/
+.release.tgz
 
 # Imported development-workspace metadata
 .emergent/

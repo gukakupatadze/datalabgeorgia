@@ -92,6 +92,14 @@ def main() -> int:
         )
         if auth_integrity.returncode != 0:
             return auth_integrity.returncode
+        assistant = subprocess.run(
+            [sys.executable, "assistant_test.py"],
+            cwd=BACKEND_DIR,
+            env=test_env,
+            check=False,
+        )
+        if assistant.returncode != 0:
+            return assistant.returncode
         wait_until_ready(server)
         completed = subprocess.run(
             [sys.executable, "backend_test.py"],

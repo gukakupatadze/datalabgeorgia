@@ -13,7 +13,7 @@ function localBackendUrl(configuredUrl) {
   }
 }
 
-const BACKEND_URL = localBackendUrl(process.env.REACT_APP_BACKEND_URL);
+const BACKEND_URL = localBackendUrl(process.env.REACT_APP_BACKEND_URL) || "";
 export const API = `${BACKEND_URL}/api`;
 
 const http = axios.create({ baseURL: API, withCredentials: true });

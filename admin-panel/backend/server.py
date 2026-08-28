@@ -16,6 +16,7 @@ from pymongo.errors import DuplicateKeyError
 from pydantic import BaseModel, EmailStr, Field
 from starlette.middleware.cors import CORSMiddleware
 
+from assistant import AssistantRequest, AssistantResponse, assistant_service
 from auth import AuthService, AuthSettings
 from models import (
     STATUS_LABELS,
@@ -249,6 +250,20 @@ async def create_public_contact_message(payload: PublicContactMessage):
         "message": "Contact message is waiting for administrator review",
         "request_id": request.id,
     }
+
+
+@public_router.post("/public/assistant", response_model=AssistantResponse)
+async def public_assistant(payload: AssistantRequest, request: Request):
+    """Answer restricted public questions without exposing CRM/customer data."""
+    client_ip = request.client.host if request.client else "unknown"
+    limit = await assistant_service.check_limits(client_ip, payload.session_id)
+    if not limit.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Assistant request limit reached. Please try again later.",
+            headers={"Retry-After": str(limit.retry_after)},
+        )
+    return await assistant_service.respond(payload)
 
 
 @public_router.get(

@@ -142,7 +142,7 @@ const Footer = ({ language }) => {
       </div>
 
       {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 right-scroll-bar-position">
+      <div className="fixed bottom-6 right-24 right-scroll-bar-position z-[70]">
         <button
           onClick={() => scrollToSection('contact')}
           className="bg-red-accent hover-red-accent text-white p-4 rounded-full shadow-lg glow-red transition-all duration-300 hover:scale-110"

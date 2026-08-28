@@ -17,6 +17,7 @@ import CaseTracking from './components/CaseTracking';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import ServiceDetailPage from './components/ServiceDetailPage';
+import AiAssistant from './components/AiAssistant';
 import { Toaster } from './components/ui/sonner';
 
 const AdminRedirect = () => {
@@ -91,6 +92,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <AiAssistant language={language} />
       <Toaster />
     </div>
   );

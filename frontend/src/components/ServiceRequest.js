@@ -8,9 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Label } from './ui/label';
 import { useToast } from '../hooks/use-toast';
 import { translations } from '../data/mockData';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import crmApi from '../lib/crmApi';
 
 const ServiceRequest = ({ language }) => {
   const t = translations[language];
@@ -40,7 +38,7 @@ const ServiceRequest = ({ language }) => {
         [field]: value
       }));
     }
-    
+
     // Clear error for this field when user starts typing/selecting
     if (errors[field]) {
       setErrors(prev => ({
@@ -51,16 +49,11 @@ const ServiceRequest = ({ language }) => {
   };
 
   const handleSelectChange = (field, value) => {
-    console.log(`=== SELECT CHANGE: ${field} = ${value} ===`);
-    setFormData(prev => {
-      const newData = {
-        ...prev,
-        [field]: value
-      };
-      console.log('Updated form data:', newData);
-      return newData;
-    });
-    
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
     // Clear error for this field
     if (errors[field]) {
       setErrors(prev => ({
@@ -74,17 +67,17 @@ const ServiceRequest = ({ language }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = language === 'ka' ? 'სახელი აუცილებელია' : 'Name is required';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = language === 'ka' ? 'ელ. ფოსტა აუცილებელია' : 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = language === 'ka' ? 'ელ. ფოსტის ფორმატი არასწორია' : 'Email format is invalid';
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = language === 'ka' ? 'ტელეფონი აუცილებელია' : 'Phone is required';
     } else if (!/^[\d\s\+\-\(\)]+$/.test(formData.phone.trim())) {
@@ -92,36 +85,29 @@ const ServiceRequest = ({ language }) => {
     } else if (formData.phone.replace(/[\s\+\-\(\)]/g, '').length < 9) {
       newErrors.phone = language === 'ka' ? 'ტელეფონი უნდა შეიცავდეს მინიმუმ 9 ციფრს' : 'Phone should contain at least 9 digits';
     }
-    
+
     if (!formData.deviceType) {
       newErrors.deviceType = language === 'ka' ? 'მოწყობილობის ტიპი აუცილებელია' : 'Device type is required';
     }
-    
+
     if (!formData.urgency) {
       newErrors.urgency = language === 'ka' ? 'სისწრაფე აუცილებელია' : 'Urgency is required';
     }
-    
+
     if (!formData.problemDescription.trim()) {
       newErrors.problemDescription = language === 'ka' ? 'პრობლემის აღწერა აუცილებელია' : 'Problem description is required';
     } else if (formData.problemDescription.trim().length < 10) {
       newErrors.problemDescription = language === 'ka' ? 'პრობლემის აღწერა უნდა იყოს მინიმუმ 10 სიმბოლო' : 'Problem description must be at least 10 characters';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Debug: Log form data
-    console.log('=== SERVICE REQUEST FORM SUBMISSION ===');
-    console.log('Form Data:', formData);
-    console.log('Device Type:', formData.deviceType);
-    console.log('Urgency:', formData.urgency);
-    
+
     if (!validateForm()) {
-      console.log('Validation failed with errors:', errors);
       toast({
         title: language === 'ka' ? 'შეცდომა' : 'Error',
         description: language === 'ka' ? 'გთხოვთ, შეავსეთ ყველა საჭირო ველი სწორად' : 'Please fill all required fields correctly',
@@ -129,21 +115,11 @@ const ServiceRequest = ({ language }) => {
       });
       return;
     }
-    
+
     try {
       setLoading(true);
-      
-      console.log('Sending request to:', `${BACKEND_URL}/api/service-requests/`);
-      console.log('Request payload:', {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        device_type: formData.deviceType,
-        problem_description: formData.problemDescription.trim(),
-        urgency: formData.urgency
-      });
-      
-      const response = await axios.post(`${BACKEND_URL}/api/service-requests/`, {
+
+      await crmApi.post('/public/tickets', {
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
@@ -154,14 +130,11 @@ const ServiceRequest = ({ language }) => {
         timeout: 10000 // 10 second timeout
       });
 
-      const data = response.data;
-      console.log('Response received:', data);
-      
       toast({
         title: language === 'ka' ? 'მოთხოვნა წარმატებით გაგზავნილია!' : 'Request Submitted Successfully!',
-        description: language === 'ka' 
-          ? `თქვენი საქმის ID: ${data.case_id}. ჩვენ მალე დაგიკავშირდებით.`
-          : `Your case ID: ${data.case_id}. We will contact you soon.`,
+        description: language === 'ka'
+          ? 'მოთხოვნა ადმინისტრატორს გადაეგზავნა. განხილვისა და დამტკიცების შემდეგ დაგიკავშირდებით.'
+          : 'Your request was sent for administrator review. We will contact you after approval.',
       });
 
       // Reset form
@@ -175,48 +148,45 @@ const ServiceRequest = ({ language }) => {
       });
 
     } catch (error) {
-      console.error('Error submitting service request:', error);
-      console.error('Error details:', error.response?.data);
-      
       let errorMessage = '';
       if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        errorMessage = language === 'ka' 
+        errorMessage = language === 'ka'
           ? 'სერვერთან კავშირის დრო ამოიწურა. გთხოვთ, სცადეთ მოგვიანებით.'
           : 'Connection timeout. Please try again later.';
       } else if (error.response) {
         // Server responded with error status
         const status = error.response.status;
-        if (status === 400) {
+        if (status === 400 || status === 422) {
           const errorData = error.response.data;
           if (errorData && errorData.detail) {
-            errorMessage = language === 'ka' 
+            errorMessage = language === 'ka'
               ? `მონაცემები არასწორია: ${errorData.detail}`
               : `Invalid data: ${errorData.detail}`;
           } else {
-            errorMessage = language === 'ka' 
+            errorMessage = language === 'ka'
               ? 'მონაცემები არასწორია. გთხოვთ, შეამოწმეთ შეყვანილი ინფორმაცია.'
               : 'Invalid data. Please check your input.';
           }
         } else if (status === 500) {
-          errorMessage = language === 'ka' 
+          errorMessage = language === 'ka'
             ? 'სერვერის შიდა შეცდომა. გთხოვთ, სცადეთ მოგვიანებით.'
             : 'Server error. Please try again later.';
         } else {
-          errorMessage = language === 'ka' 
+          errorMessage = language === 'ka'
             ? `სერვერის შეცდომა (კოდი: ${status}). გთხოვთ, სცადეთ მოგვიანებით.`
             : `Server error (code: ${status}). Please try again later.`;
         }
       } else if (error.request) {
         // Network error
-        errorMessage = language === 'ka' 
+        errorMessage = language === 'ka'
           ? 'კავშირის პრობლემა. გთხოვთ, შეამოწმეთ ინტერნეტ კავშირი და სცადეთ ხელახლა.'
           : 'Network error. Please check your connection and try again.';
       } else {
-        errorMessage = language === 'ka' 
+        errorMessage = language === 'ka'
           ? 'მოთხოვნის გაგზავნისას მოხდა შეცდომა. გთხოვთ, სცადეთ ხელახლა.'
           : 'Error submitting request. Please try again.';
       }
-      
+
       toast({
         title: language === 'ka' ? 'შეცდომა' : 'Error',
         description: errorMessage,
@@ -262,13 +232,13 @@ const ServiceRequest = ({ language }) => {
               {language === 'ka' ? 'სერვისის მოთხოვნის ფორმა' : 'Service Request Form'}
             </CardTitle>
             <CardDescription className="text-gray-400">
-              {language === 'ka' 
+              {language === 'ka'
                 ? 'შეავსეთ ყველა ველი დეტალური ინფორმაციისთვის'
                 : 'Fill in all fields for detailed information'
               }
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               {/* Personal Information */}
@@ -374,7 +344,7 @@ const ServiceRequest = ({ language }) => {
                   rows={4}
                   maxLength={1000}
                   className={`bg-gray-800 border-gray-600 text-white ${errors.problemDescription ? 'border-red-500' : ''}`}
-                  placeholder={language === 'ka' 
+                  placeholder={language === 'ka'
                     ? 'აღწერეთ დეტალურად რა პრობლემაა თქვენს მოწყობილობასთან...'
                     : 'Describe in detail what problem you have with your device...'
                   }
@@ -383,8 +353,8 @@ const ServiceRequest = ({ language }) => {
               </div>
 
               {/* Submit Button */}
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-red-accent hover-red-accent text-white py-3 text-lg font-semibold glow-red"
                 disabled={loading}
               >

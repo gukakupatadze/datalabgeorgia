@@ -40,7 +40,7 @@ const Footer = ({ language }) => {
               </div>
               <span className="text-xl font-bold text-white">DataLab Georgia</span>
             </div>
-            
+
             <p className="text-gray-400 leading-relaxed">
               {t.footerDesc}
             </p>
@@ -137,24 +137,12 @@ const Footer = ({ language }) => {
             <div className="text-gray-400 text-sm">
               © 2024 DataLab Georgia. {t.allRightsReserved}
             </div>
-            
-            <div className="flex items-center space-x-6">
-              <span className="text-gray-400 text-sm">
-                {language === 'ka' ? 'გაჩუქებულია' : 'Powered by'}
-              </span>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-red-accent rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">E</span>
-                </div>
-                <span className="text-gray-400 text-sm">Emergent AI</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6">
+      <div className="fixed bottom-6 right-6 right-scroll-bar-position">
         <button
           onClick={() => scrollToSection('contact')}
           className="bg-red-accent hover-red-accent text-white p-4 rounded-full shadow-lg glow-red transition-all duration-300 hover:scale-110"

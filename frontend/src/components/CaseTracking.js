@@ -1,246 +1,156 @@
 import React, { useState } from 'react';
-import { Search, Package, CheckCircle, Clock, AlertCircle, Archive } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Package, Search, Wrench } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
 import { useToast } from '../hooks/use-toast';
 import { translations } from '../data/mockData';
-import axios from 'axios';
+import crmApi from '../lib/crmApi';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const STATUS_INFO = {
+  new: {
+    ka: 'ახალი',
+    en: 'New',
+    color: 'border-orange-500 text-orange-400',
+    icon: AlertCircle
+  },
+  in_progress: {
+    ka: 'მიმდინარე',
+    en: 'In progress',
+    color: 'border-blue-500 text-blue-400',
+    icon: Wrench
+  },
+  waiting_for_part: {
+    ka: 'ნაწილის მოლოდინში',
+    en: 'Waiting for part',
+    color: 'border-amber-500 text-amber-400',
+    icon: Clock
+  },
+  ready: {
+    ka: 'მზადაა',
+    en: 'Ready',
+    color: 'border-green-500 text-green-400',
+    icon: CheckCircle
+  },
+  could_not_fix: {
+    ka: 'ვერ შეკეთდა',
+    en: 'Could not repair',
+    color: 'border-red-500 text-red-400',
+    icon: AlertCircle
+  },
+  picked_up: {
+    ka: 'გატანილია',
+    en: 'Picked up',
+    color: 'border-emerald-500 text-emerald-400',
+    icon: CheckCircle
+  }
+};
+
+const statusMessage = (status, language) => {
+  const messages = {
+    new: {
+      ka: 'თქვენი განაცხადი მიღებულია და დამუშავებას ელოდება.',
+      en: 'Your request has been received and is waiting to be processed.'
+    },
+    in_progress: {
+      ka: 'თქვენს მოწყობილობაზე მუშაობა მიმდინარეობს.',
+      en: 'Work on your device is in progress.'
+    },
+    waiting_for_part: {
+      ka: 'შეკეთებისთვის საჭირო ნაწილის მიღებას ველოდებით.',
+      en: 'We are waiting for a required replacement part.'
+    },
+    ready: {
+      ka: 'მოწყობილობა მზადაა. დეტალებისთვის დაგვიკავშირდით.',
+      en: 'Your device is ready. Contact us for collection details.'
+    },
+    could_not_fix: {
+      ka: 'სამწუხაროდ, მოწყობილობის შეკეთება ვერ მოხერხდა. დეტალებისთვის დაგვიკავშირდით.',
+      en: 'Unfortunately, the device could not be repaired. Contact us for details.'
+    },
+    picked_up: {
+      ka: 'მოწყობილობა გატანილია.',
+      en: 'The device has been picked up.'
+    }
+  };
+  return messages[status]?.[language] || '';
+};
+
+const formatDate = (dateString, language) => {
+  if (!dateString) return '—';
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat(language === 'ka' ? 'ka-GE' : 'en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date);
+};
 
 const CaseTracking = ({ language }) => {
   const t = translations[language];
   const { toast } = useToast();
-  const [trackingId, setTrackingId] = useState('');
-  const [caseInfo, setCaseInfo] = useState(null);
+  const [query, setQuery] = useState('');
+  const [tickets, setTickets] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const selectedTicket = tickets[selectedIndex] || null;
+  const progressPercentage = selectedTicket
+    ? Math.max(0, Math.min(100, Number(selectedTicket.progress_percentage) || 0))
+    : 0;
+
   const trackCase = async () => {
-    if (!trackingId.trim()) {
+    const value = query.trim();
+    if (value.length < 4) {
       toast({
         title: language === 'ka' ? 'შეცდომა' : 'Error',
-        description: language === 'ka' ? 'შეიყვანეთ თვალთვალის ID' : 'Please enter tracking ID',
-        variant: "destructive"
+        description: language === 'ka'
+          ? 'შეიყვანეთ ტიკეტის კოდი ან ტელეფონის ნომერი'
+          : 'Enter a ticket code or phone number',
+        variant: 'destructive'
       });
       return;
     }
 
     try {
       setIsLoading(true);
-      const caseId = trackingId.trim();
-      
-      // Check if it's a Kanban case (KB prefix) or Service Request case (DL prefix)
-      if (caseId.startsWith('KB')) {
-        // Search in Kanban tasks from localStorage
-        const manualTasks = JSON.parse(localStorage.getItem('kanban_manual_tasks') || '[]');
-        const kanbanCase = manualTasks.find(task => task.case_id === caseId);
-        
-        if (kanbanCase) {
-          // Convert Kanban task to case info format
-          const caseData = {
-            case_id: kanbanCase.case_id,
-            name: kanbanCase.name || kanbanCase.client_name,
-            email: kanbanCase.email,
-            phone: kanbanCase.phone,
-            device_type: kanbanCase.device_type,
-            problem_description: kanbanCase.damage_description || kanbanCase.problem_description,
-            urgency: kanbanCase.urgency,
-            status: kanbanCase.status || 'pending',
-            created_at: kanbanCase.created_at || new Date().toISOString(),
-            started_at: kanbanCase.started_at,
-            completed_at: kanbanCase.completed_at,
-            price: kanbanCase.price,
-            progress_percentage: getProgressPercentage(kanbanCase.status || 'pending'),
-            estimated_completion: kanbanCase.estimated_completion || calculateEstimatedCompletion(kanbanCase.created_at, kanbanCase.urgency),
-            is_kanban_case: true // Flag to identify Kanban cases
-          };
-          
-          setCaseInfo(caseData);
-          toast({
-            title: language === 'ka' ? 'კანბან საქმე ნაპოვნია!' : 'Kanban Case Found!',
-            description: language === 'ka' ? 'კანბანის საქმის ინფორმაცია წარმატებით ჩაიტვირთა' : 'Kanban case information loaded successfully',
-          });
-          return;
-        } else {
-          // Kanban case not found
-          setCaseInfo(null);
-          toast({
-            title: language === 'ka' ? 'კანბან საქმე ვერ მოიძებნა' : 'Kanban Case Not Found',
-            description: language === 'ka' ? 'შეამოწმეთ კანბანის საქმის ID და სცადეთ თავიდან' : 'Please check your Kanban case ID and try again',
-            variant: "destructive"
-          });
-          return;
-        }
-      } else {
-        // Search in Service Requests via API (DL prefix or other)
-        const response = await axios.get(`${BACKEND_URL}/api/service-requests/${caseId}`);
-        
-        // Add progress percentage for Service Requests based on their status
-        // If is_archived is true, override status to 'archived'
-        const actualStatus = response.data.is_archived ? 'archived' : response.data.status;
-        const serviceRequestData = {
-          ...response.data,
-          status: actualStatus,
-          progress_percentage: response.data.is_archived ? 100 : getProgressPercentage(actualStatus),
-          estimated_completion: response.data.estimated_completion || calculateEstimatedCompletion(response.data.created_at, response.data.urgency)
-        };
-        
-        setCaseInfo(serviceRequestData);
-        toast({
-          title: language === 'ka' ? 'სერვისის საქმე ნაპოვნია!' : 'Service Case Found!',
-          description: language === 'ka' ? 'სერვისის საქმის ინფორმაცია წარმატებით ჩაიტვირთა' : 'Service case information loaded successfully',
-        });
-      }
-
+      const response = await crmApi.get('/public/tickets/track', {
+        params: { query: value }
+      });
+      setTickets(response.data);
+      setSelectedIndex(0);
+      toast({
+        title: language === 'ka' ? 'ტიკეტი ნაპოვნია' : 'Ticket found',
+        description: response.data.length > 1
+          ? (language === 'ka'
+            ? `ნაპოვნია ${response.data.length} მიმდინარე ტიკეტი`
+            : `${response.data.length} active tickets found`)
+          : (language === 'ka' ? 'ინფორმაცია წარმატებით ჩაიტვირთა' : 'Ticket details loaded')
+      });
     } catch (error) {
-      console.error('Error tracking case:', error);
-      setCaseInfo(null);
-      const caseId = trackingId.trim(); // Get caseId for error handling
-      
-      if (error.response?.status === 404) {
-        // Check if it might be an archived case
-        try {
-          // Try to search in archived cases
-          const archivedResponse = await axios.get(`${BACKEND_URL}/api/service-requests/archived`);
-          const archivedCases = archivedResponse.data;
-          const archivedCase = archivedCases.find(req => req.case_id === caseId);
-          
-          if (archivedCase) {
-            // Found in archived cases
-            const archivedCaseData = {
-              ...archivedCase,
-              progress_percentage: 100, // Archived cases are 100% complete
-              status: 'archived'
-            };
-            
-            setCaseInfo(archivedCaseData);
-            toast({
-              title: language === 'ka' ? 'საქმე დახურულია' : 'Case is Closed',
-              description: language === 'ka' ? 'ეს საქმე დასრულებული და არქივშია' : 'This case has been completed and archived',
-              variant: "default"
-            });
-            return;
-          }
-        } catch (archivedError) {
-          console.error('Error checking archived cases:', archivedError);
-        }
-        
-        // Not found in archived cases either
-        toast({
-          title: language === 'ka' ? 'საქმე ვერ მოიძებნა' : 'Case Not Found',
-          description: language === 'ka' ? 'შეამოწმეთ თვალთვალის ID და სცადეთ თავიდან' : 'Please check your tracking ID and try again',
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: language === 'ka' ? 'შეცდომა' : 'Error',
-          description: language === 'ka' ? 'საქმის ძიებისას მოხდა შეცდომა' : 'Error occurred while tracking case',
-          variant: "destructive"
-        });
-      }
+      setTickets([]);
+      setSelectedIndex(0);
+      toast({
+        title: language === 'ka' ? 'ტიკეტი ვერ მოიძებნა' : 'Ticket not found',
+        description: error.response?.status === 404
+          ? (language === 'ka'
+            ? 'ამ მონაცემებით მიმდინარე ტიკეტი არ იძებნება'
+            : 'No active ticket matches this information')
+          : (language === 'ka'
+            ? 'ძიებისას დაფიქსირდა შეცდომა. სცადეთ მოგვიანებით.'
+            : 'A search error occurred. Please try again later.'),
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper function to calculate progress percentage based on status
-  const getProgressPercentage = (status) => {
-    switch (status) {
-      case 'pending': return 1;
-      case 'in_progress': return 50;
-      case 'completed': return 100;
-      case 'picked_up': return 100;
-      case 'archived': return 100;
-      default: return 0;
-    }
-  };
-
-  // Helper function to calculate estimated completion based on urgency
-  const calculateEstimatedCompletion = (createdAt, urgency) => {
-    if (!createdAt || !urgency) return '';
-    
-    try {
-      const created = new Date(createdAt);
-      let daysToAdd = 0;
-      
-      switch (urgency) {
-        case 'low': daysToAdd = 7; break;
-        case 'medium': daysToAdd = 5; break;
-        case 'high': daysToAdd = 2; break;
-        case 'critical': daysToAdd = 1; break;
-        default: daysToAdd = 5;
-      }
-      
-      const estimatedDate = new Date(created);
-      estimatedDate.setDate(created.getDate() + daysToAdd);
-      
-      return estimatedDate.toISOString().split('T')[0];
-    } catch (error) {
-      return '';
-    }
-  };
-
-  // Helper function to format dates for Kanban cases (remove time)
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      // Return only the date part (YYYY-MM-DD)
-      return date.toISOString().split('T')[0];
-    } catch (error) {
-      return ''; // Return empty if parsing fails
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'picked_up':
-        return <Package className="w-5 h-5 text-purple-500" />;
-      case 'archived':
-        return <Archive className="w-5 h-5 text-gray-500" />;
-      case 'in_progress':
-        return <Clock className="w-5 h-5 text-blue-500" />;
-      case 'pending':
-        return <AlertCircle className="w-5 h-5 text-orange-500" />;
-      default:
-        return <AlertCircle className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status) => {
-    const statusTexts = {
-      completed: { ka: 'დასრულებული', en: 'Completed' },
-      picked_up: { ka: 'გატანილი', en: 'Picked Up' },
-      archived: { ka: 'არქივი', en: 'Archived' },
-      in_progress: { ka: 'მუშავდება', en: 'In Progress' },
-      pending: { ka: 'მომლოდინე', en: 'Pending' }
-    };
-    return statusTexts[status] ? statusTexts[status][language] : (language === 'ka' ? 'უცნობი' : 'Unknown');
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'border-green-500 text-green-500';
-      case 'picked_up':
-        return 'border-purple-500 text-purple-500';
-      case 'archived':
-        return 'border-gray-500 text-gray-500';
-      case 'in_progress':
-        return 'border-blue-500 text-blue-500';
-      case 'pending':
-        return 'border-orange-500 text-orange-500';
-      default:
-        return 'border-gray-500 text-gray-500';
-    }
-  };
+  const status = selectedTicket ? STATUS_INFO[selectedTicket.status] : null;
+  const StatusIcon = status?.icon || AlertCircle;
 
   return (
     <section id="case-tracking" className="py-20 bg-gray-800">
@@ -249,171 +159,158 @@ const CaseTracking = ({ language }) => {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             {t.caseTrackingTitle}
           </h2>
-          <p className="text-xl text-gray-300">
-            {t.caseTrackingSubtitle}
-          </p>
+          <p className="text-xl text-gray-300">{t.caseTrackingSubtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Tracking Form */}
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
               <CardTitle className="text-2xl text-white flex items-center">
                 <Search className="w-6 h-6 text-red-accent mr-3" />
-                {language === 'ka' ? 'საქმის ძიება' : 'Track Your Case'}
+                {language === 'ka' ? 'საქმის ძიება' : 'Track your case'}
               </CardTitle>
               <CardDescription className="text-gray-400">
-                {language === 'ka' 
-                  ? 'შეიყვანეთ თქვენი თვალთვალის ID რომ ნახოთ საქმის სტატუსი'
-                  : 'Enter your tracking ID to view case status'
-                }
+                {language === 'ka'
+                  ? 'მოძებნეთ მიმდინარე საქმე ტიკეტის კოდით ან ტელეფონის ნომრით'
+                  : 'Find an active case by ticket code or phone number'}
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="tracking-id" className="text-gray-300">
-                  {language === 'ka' ? 'თვალთვალის ID' : 'Tracking ID'}
+                <Label htmlFor="tracking-query" className="text-gray-300">
+                  {language === 'ka' ? 'ტიკეტის კოდი ან ტელეფონი' : 'Ticket code or phone'}
                 </Label>
                 <Input
-                  id="tracking-id"
+                  id="tracking-query"
                   type="text"
-                  value={trackingId}
-                  onChange={(e) => setTrackingId(e.target.value)}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={(event) => event.key === 'Enter' && trackCase()}
                   className="bg-gray-800 border-gray-600 text-white"
-                  placeholder="DL2024001"
-                  onKeyPress={(e) => e.key === 'Enter' && trackCase()}
+                  placeholder={language === 'ka' ? 'მაგ: 10001 ან 555123456' : 'e.g. 10001 or 555123456'}
                 />
               </div>
 
-              <Button 
+              <Button
+                type="button"
                 onClick={trackCase}
                 disabled={isLoading}
                 className="w-full bg-red-accent hover-red-accent text-white py-3"
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                     {language === 'ka' ? 'ძიება...' : 'Searching...'}
                   </>
                 ) : (
                   <>
                     <Search className="w-4 h-4 mr-2" />
-                    {language === 'ka' ? 'საქმის ძიება' : 'Track Case'}
+                    {language === 'ka' ? 'საქმის ძიება' : 'Track case'}
                   </>
                 )}
               </Button>
 
-              {/* Demo IDs */}
               <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                <p className="text-sm text-gray-400 mb-2">
-                  {language === 'ka' ? 'ტესტირებისთვის:' : 'For testing:'}
+                <p className="text-sm text-gray-400">
+                  {language === 'ka'
+                    ? 'ტელეფონის ნომრით ძებნისას გამოჩნდება ყველა მიმდინარე ტიკეტი და ბოლო 30 დღის განმავლობაში გატანილი ნივთებიც.'
+                    : 'Phone search shows every active ticket plus items picked up within the last 30 days.'}
                 </p>
-                <div className="space-y-1">
-                  <button 
-                    onClick={() => setTrackingId('DL2025001')}
-                    className="block text-red-accent hover:text-red-400 text-sm transition-colors"
-                  >
-                    DL2025001 ({language === 'ka' ? 'ლოდინაში' : 'Pending'})
-                  </button>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {language === 'ka' 
-                      ? 'ან გამოიყენეთ Service Request-ით მიღებული ID'
-                      : 'Or use ID received from Service Request'
-                    }
-                  </p>
-                </div>
               </div>
+
+              {tickets.length > 1 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">
+                    {language === 'ka' ? 'აირჩიეთ ტიკეტი:' : 'Select a ticket:'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {tickets.map((ticket, index) => (
+                      <button
+                        key={`${ticket.tracking_code || ticket.ticket_code}-${index}`}
+                        type="button"
+                        onClick={() => setSelectedIndex(index)}
+                        className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                          selectedIndex === index
+                            ? 'border-red-accent bg-red-accent text-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        #{ticket.tracking_code || ticket.ticket_code}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Case Information */}
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
               <CardTitle className="text-2xl text-white flex items-center">
                 <Package className="w-6 h-6 text-red-accent mr-3" />
-                {language === 'ka' ? 'საქმის ინფორმაცია' : 'Case Information'}
+                {language === 'ka' ? 'საქმის ინფორმაცია' : 'Case information'}
               </CardTitle>
             </CardHeader>
-            
+
             <CardContent>
-              {caseInfo ? (
+              {selectedTicket ? (
                 <div className="space-y-6">
-                  {/* Case Header */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="text-xl font-bold text-white">
-                        {caseInfo.case_id}
+                        #{selectedTicket.tracking_code || selectedTicket.ticket_code}
                       </h3>
-                      <p className="text-gray-400">{caseInfo.device_type?.toUpperCase() || 'N/A'}</p>
+                      <p className="text-gray-400">
+                        {selectedTicket.device || selectedTicket.device_type?.toUpperCase()}
+                      </p>
                     </div>
-                    <Badge variant="outline" className={getStatusColor(caseInfo.status)}>
-                      {getStatusIcon(caseInfo.status)}
-                      <span className="ml-1">{getStatusText(caseInfo.status)}</span>
+                    <Badge variant="outline" className={status?.color || 'border-gray-500 text-gray-400'}>
+                      <StatusIcon className="w-4 h-4" />
+                      <span className="ml-1">{status?.[language] || selectedTicket.status}</span>
                     </Badge>
                   </div>
 
-                  {/* Progress Bar */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">
-                        {language === 'ka' ? 'პროგრესი' : 'Progress'}
-                      </span>
-                      <span className="text-white">{caseInfo.progress_percentage || caseInfo.progress || 0}%</span>
+                      <span className="text-gray-400">{language === 'ka' ? 'პროგრესი' : 'Progress'}</span>
+                      <span className="text-white">{progressPercentage}%</span>
                     </div>
                     <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-700">
-                      <div 
-                        className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500 ease-out"
-                        style={{ width: `${caseInfo.progress_percentage || caseInfo.progress || 0}%` }}
+                      <div
+                        className="h-full transition-all duration-500"
+                        style={{
+                          width: `${progressPercentage}%`,
+                          background: 'linear-gradient(90deg, #ef4444 0%, #f87171 100%)'
+                        }}
                       />
                     </div>
                   </div>
 
-                  {/* Case Details */}
                   <div className="space-y-3">
-                    <div className="flex justify-between py-2 border-b border-gray-700">
-                      <span className="text-gray-400">
-                        {language === 'ka' ? 'შექმნის თარიღი:' : 'Created Date:'}
-                      </span>
-                      <span className="text-white">
-                        {formatDate(caseInfo.created_at)}
-                      </span>
+                    <div className="flex justify-between gap-4 py-2 border-b border-gray-700">
+                      <span className="text-gray-400">{language === 'ka' ? 'მიღების თარიღი:' : 'Received:'}</span>
+                      <span className="text-white text-right">{formatDate(selectedTicket.created_at, language)}</span>
                     </div>
-                    
-                    {(caseInfo.estimated_completion && formatDate(caseInfo.estimated_completion) !== '') && (
-                      <div className="flex justify-between py-2 border-b border-gray-700">
-                        <span className="text-gray-400">
-                          {language === 'ka' ? 'სავარაუდო დასრულება:' : 'Est. Completion:'}
-                        </span>
-                        <span className="text-white">
-                          {formatDate(caseInfo.estimated_completion)}
-                        </span>
+                    {selectedTicket.estimated_completion && (
+                      <div className="flex justify-between gap-4 py-2 border-b border-gray-700">
+                        <span className="text-gray-400">{language === 'ka' ? 'სავარაუდო დასრულება:' : 'Estimated completion:'}</span>
+                        <span className="text-white text-right">{formatDate(selectedTicket.estimated_completion, language)}</span>
                       </div>
                     )}
-                    
-                    {caseInfo.price && (
-                      <div className="flex justify-between py-2 border-b border-gray-700">
-                        <span className="text-gray-400">
-                          {language === 'ka' ? 'ღირებულება:' : 'Price:'}
-                        </span>
-                        <span className="text-white">{caseInfo.price}₾</span>
+                    {selectedTicket.price !== null && selectedTicket.price !== undefined && (
+                      <div className="flex justify-between gap-4 py-2 border-b border-gray-700">
+                        <span className="text-gray-400">{language === 'ka' ? 'ღირებულება:' : 'Price:'}</span>
+                        <span className="text-white">{selectedTicket.price} ₾</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Status Message */}
                   <div className="bg-red-accent/10 border border-red-accent/20 rounded-lg p-4">
                     <p className="text-sm text-gray-300">
-                      {caseInfo.status === 'archived' 
-                        ? (language === 'ka' ? 'თქვენი საქმე დასრულდა და არქივშია. საქმე ოფიციალურად დახურულია. 📁' : 'Your case has been completed and archived. The case is officially closed. 📁')
-                        : caseInfo.status === 'picked_up' 
-                        ? (language === 'ka' ? 'თქვენი საქმე დასრულდა და მოწყობილობა გატანილია! 🎉' : 'Your case has been completed and device has been picked up! 🎉')
-                        : caseInfo.status === 'completed' 
-                        ? (language === 'ka' ? 'თქვენი საქმე წარმატებით დასრულდა! შეგიძლიათ მოიტანოთ თქვენი მოწყობილობა.' : 'Your case has been completed successfully! You can pick up your device.')
-                        : caseInfo.status === 'in_progress'
-                        ? (language === 'ka' ? 'თქვენი საქმე აქტიურად მუშავდება. ჩვენ გაცნობებთ როდესაც მზად იქნება.' : 'Your case is actively being processed. We will notify you when it\'s ready.')
-                        : (language === 'ka' ? 'თქვენი საქმე მომლოდინე რეჟიმშია. მალე დავიწყებთ მუშაობას.' : 'Your case is pending. We will start processing it soon.')
-                      }
+                      {statusMessage(selectedTicket.status, language) || selectedTicket.customer_message}
                     </p>
                   </div>
                 </div>
@@ -421,10 +318,9 @@ const CaseTracking = ({ language }) => {
                 <div className="text-center py-12">
                   <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <p className="text-gray-400">
-                    {language === 'ka' 
-                      ? 'შეიყვანეთ თვალთვალის ID საქმის ინფორმაციის სანახავად'
-                      : 'Enter a tracking ID to view case information'
-                    }
+                    {language === 'ka'
+                      ? 'შეიყვანეთ ტიკეტის კოდი ან ტელეფონის ნომერი'
+                      : 'Enter a ticket code or phone number'}
                   </p>
                 </div>
               )}

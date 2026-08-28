@@ -10,10 +10,21 @@ const Services = ({ language }) => {
   const t = translations[language];
   const navigate = useNavigate();
 
+  const serviceRoutes = {
+    1: '/services/hdd-recovery',
+    2: '/services/ssd-recovery',
+    3: '/services/usb-recovery',
+    4: '/services/raid-recovery'
+  };
+
+  const openServiceDetails = (serviceId) => {
+    navigate(serviceRoutes[serviceId]);
+  };
+
   const getIcon = (iconName) => {
     const icons = {
       HardDrive,
-      Shield, 
+      Shield,
       Wrench,
       Search,
       Camera,
@@ -46,9 +57,19 @@ const Services = ({ language }) => {
           {services.map((service) => {
             const IconComponent = getIcon(service.icon);
             return (
-              <Card 
+              <Card
                 key={service.id}
                 className="service-card bg-gray-800 border-gray-700 hover:border-red-accent/50 group cursor-pointer"
+                role="link"
+                tabIndex={0}
+                aria-label={`${t[service.titleKey]} — ${language === 'ka' ? 'დეტალურად' : 'Learn More'}`}
+                onClick={() => openServiceDetails(service.id)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openServiceDetails(service.id);
+                  }
+                }}
               >
                 <CardHeader className="text-center pb-1">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-red-accent/10 rounded-full mb-1 mx-auto group-hover:bg-red-accent/20 transition-colors duration-300">
@@ -61,7 +82,7 @@ const Services = ({ language }) => {
                     {t[service.descKey]}
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent className="pt-2">
                   <div className="space-y-2 mb-10 mt-4">
                     {(language === 'ka' ? service.features : service.features_en || service.features).map((feature, index) => (
@@ -71,19 +92,18 @@ const Services = ({ language }) => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-8">
                     <Badge variant="outline" className="border-red-accent text-red-accent">
                       {service.price}
                     </Badge>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       className="text-red-accent hover:text-white hover:bg-red-accent"
-                      onClick={() => {
-                        if (service.id === 1) { // Data Recovery service
-                          navigate('/data-recovery');
-                        }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openServiceDetails(service.id);
                       }}
                     >
                       {language === 'ka' ? 'დეტალურად' : 'Learn More'}
@@ -95,25 +115,6 @@ const Services = ({ language }) => {
           })}
         </div>
 
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <p className="text-lg text-gray-300 mb-6">
-            {language === 'ka' 
-              ? 'არ ხედავთ თქვენს საჭირო სერვისს? დაგვიკავშირდით!' 
-              : "Don't see the service you need? Contact us!"
-            }
-          </p>
-          <Button 
-            className="bg-red-accent hover-red-accent text-white px-8 py-3"
-            onClick={() => {
-              const element = document.getElementById('contact');
-              if (element) element.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            {language === 'ka' ? 'კონსულტაცია' : 'Get Consultation'}
-            <ChevronRight className="ml-2 w-4 h-4" />
-          </Button>
-        </div>
       </div>
     </section>
   );

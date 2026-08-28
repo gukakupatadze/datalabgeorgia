@@ -1,41 +1,51 @@
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+# Environment and credentials
 .env
+.env.*
+*.env
+*.env.*
+!.env.example
+!**/.env.example
+
+# JavaScript dependencies
+node_modules/
+**/node_modules/
+
+# Generated frontend bundles
+build/
+**/build/
+dist/
+**/dist/
+
+# Python environments and caches
+.venv/
+**/.venv/
+**/.venv*/
+venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+
+# Local databases and runtime files
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Tool and editor files
+.DS_Store
+.idea/
+.vscode/
+.cache/
+coverage/
+
+# Imported development-workspace metadata
+.emergent/
+**/.emergent/
+**/.gitconfig
+**/memory/
+**/test_reports/
+**/plan.md
+**/test_result.md

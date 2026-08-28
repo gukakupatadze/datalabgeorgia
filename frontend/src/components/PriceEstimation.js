@@ -7,9 +7,7 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { translations } from '../data/mockData';
 import { useToast } from '../hooks/use-toast';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import crmApi from '../lib/crmApi';
 
 const PriceEstimation = ({ language }) => {
   const t = translations[language];
@@ -23,11 +21,11 @@ const PriceEstimation = ({ language }) => {
   });
 
   const deviceTypes = [
-    { value: 'hdd', labelKa: 'HDD მყარი დისკი', labelEn: 'HDD Hard Drive', basePrice: 100 },
-    { value: 'ssd', labelKa: 'SSD დისკი', labelEn: 'SSD Drive', basePrice: 150 },
-    { value: 'raid', labelKa: 'RAID მასივი', labelEn: 'RAID Array', basePrice: 300 },
-    { value: 'usb', labelKa: 'USB მოწყობილობა', labelEn: 'USB Device', basePrice: 80 },
-    { value: 'sd', labelKa: 'SD ბარათი', labelEn: 'SD Card', basePrice: 60 }
+    { value: 'hdd', labelKa: 'HDD მყარი დისკი', labelEn: 'HDD Hard Drive', basePrice: 150 },
+    { value: 'ssd', labelKa: 'SSD დისკი', labelEn: 'SSD Drive', basePrice: 300 },
+    { value: 'raid', labelKa: 'RAID მასივი', labelEn: 'RAID Array', basePrice: 500 },
+    { value: 'usb', labelKa: 'USB მოწყობილობა', labelEn: 'USB Device', basePrice: 150 },
+    { value: 'sd', labelKa: 'SD ბარათი', labelEn: 'SD Card', basePrice: 150 }
   ];
 
   const problemTypes = [
@@ -55,7 +53,7 @@ const PriceEstimation = ({ language }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${BACKEND_URL}/api/price-estimate/`, {
+      const response = await crmApi.post('/price-estimate/', {
         device_type: formData.deviceType,
         problem_type: formData.problemType,
         urgency: formData.urgency
@@ -78,8 +76,7 @@ const PriceEstimation = ({ language }) => {
         description: language === 'ka' ? `სავარაუდო ღირებულება: ${data.estimated_price}₾` : `Estimated cost: ${data.estimated_price}₾`,
       });
 
-    } catch (error) {
-      console.error('Error calculating price:', error);
+    } catch {
       toast({
         title: language === 'ka' ? 'შეცდომა' : 'Error',
         description: language === 'ka' ? 'ფასის გაანგარიშებისას მოხდა შეცდომა' : 'Error calculating price',
@@ -119,21 +116,21 @@ const PriceEstimation = ({ language }) => {
                 {language === 'ka' ? 'ფასის კალკულატორი' : 'Price Calculator'}
               </CardTitle>
               <CardDescription className="text-gray-400">
-                {language === 'ka' 
+                {language === 'ka'
                   ? 'აირჩიეთ თქვენი მოწყობილობა და პრობლემის ტიპი'
                   : 'Select your device and problem type'
                 }
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               {/* Device Type */}
               <div className="space-y-2">
-                <Label className="text-gray-300">
+                <Label htmlFor="estimate-device" className="text-gray-300">
                   {language === 'ka' ? 'მოწყობილობის ტიპი' : 'Device Type'}
                 </Label>
                 <Select value={formData.deviceType} onValueChange={(value) => handleInputChange('deviceType', value)}>
-                  <SelectTrigger className="bg-gray-900 border-gray-600 text-white">
+                  <SelectTrigger id="estimate-device" className="bg-gray-900 border-gray-600 text-white">
                     <SelectValue placeholder={language === 'ka' ? 'აირჩიეთ მოწყობილობა' : 'Select device'} />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-600">
@@ -148,11 +145,11 @@ const PriceEstimation = ({ language }) => {
 
               {/* Problem Type */}
               <div className="space-y-2">
-                <Label className="text-gray-300">
+                <Label htmlFor="estimate-problem" className="text-gray-300">
                   {language === 'ka' ? 'პრობლემის ტიპი' : 'Problem Type'}
                 </Label>
                 <Select value={formData.problemType} onValueChange={(value) => handleInputChange('problemType', value)}>
-                  <SelectTrigger className="bg-gray-900 border-gray-600 text-white">
+                  <SelectTrigger id="estimate-problem" className="bg-gray-900 border-gray-600 text-white">
                     <SelectValue placeholder={language === 'ka' ? 'აირჩიეთ პრობლემა' : 'Select problem'} />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-600">
@@ -167,11 +164,11 @@ const PriceEstimation = ({ language }) => {
 
               {/* Urgency */}
               <div className="space-y-2">
-                <Label className="text-gray-300">
+                <Label htmlFor="estimate-urgency" className="text-gray-300">
                   {language === 'ka' ? 'სისწრაფე' : 'Urgency Level'}
                 </Label>
                 <Select value={formData.urgency} onValueChange={(value) => handleInputChange('urgency', value)}>
-                  <SelectTrigger className="bg-gray-900 border-gray-600 text-white">
+                  <SelectTrigger id="estimate-urgency" className="bg-gray-900 border-gray-600 text-white">
                     <SelectValue placeholder={language === 'ka' ? 'აირჩიეთ სისწრაფე' : 'Select urgency'} />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-600">
@@ -184,7 +181,7 @@ const PriceEstimation = ({ language }) => {
                 </Select>
               </div>
 
-              <Button 
+              <Button
                 onClick={calculatePrice}
                 className="w-full bg-red-accent hover-red-accent text-white py-3"
                 disabled={!formData.deviceType || !formData.problemType || !formData.urgency || loading}
@@ -212,7 +209,7 @@ const PriceEstimation = ({ language }) => {
                 {language === 'ka' ? 'შეფასების შედეგი' : 'Estimation Result'}
               </CardTitle>
             </CardHeader>
-            
+
             <CardContent>
               {estimation ? (
                 <div className="space-y-6">
@@ -234,14 +231,14 @@ const PriceEstimation = ({ language }) => {
                         {estimation.device}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between py-2 border-b border-gray-700">
                       <span className="text-gray-400">
                         {language === 'ka' ? 'პრობლემა:' : 'Problem:'}
                       </span>
                       <span className="text-white">{estimation.problem}</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between py-2">
                       <span className="text-gray-400 flex items-center">
                         <Clock className="w-4 h-4 mr-1" />
@@ -253,7 +250,7 @@ const PriceEstimation = ({ language }) => {
 
                   <div className="bg-red-accent/10 border border-red-accent/20 rounded-lg p-4">
                     <p className="text-sm text-gray-300">
-                      {language === 'ka' 
+                      {language === 'ka'
                         ? '* ეს არის სავარაუდო ღირებულება. საბოლოო ფასი დამოკიდებულია მოწყობილობის მდგომარეობაზე.'
                         : '* This is an estimated price. Final cost depends on device condition.'
                       }
@@ -264,7 +261,7 @@ const PriceEstimation = ({ language }) => {
                 <div className="text-center py-12">
                   <Calculator className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <p className="text-gray-400">
-                    {language === 'ka' 
+                    {language === 'ka'
                       ? 'შეავსეთ ყველა ველი ფასის გასაანგარიშებლად'
                       : 'Fill in all fields to calculate the price'
                     }

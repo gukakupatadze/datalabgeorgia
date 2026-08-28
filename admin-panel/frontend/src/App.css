@@ -1,0 +1,20 @@
+/* App-specific styles. CRA defaults removed for the CRM workspace. */
+.App {
+    height: 100vh;
+    width: 100%;
+}
+
+/* Fade/slide entrance for detail panel content switches */
+@keyframes crm-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.crm-fade-in {
+    animation: crm-fade-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}

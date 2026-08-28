@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Star, Quote } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { translations } from '../data/mockData';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import { translations, testimonials as fallbackTestimonials } from '../data/mockData';
+import api from '../lib/api';
 
 const Testimonials = ({ language }) => {
   const t = translations[language];
@@ -16,22 +14,20 @@ const Testimonials = ({ language }) => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        console.log('Fetching testimonials from:', `${BACKEND_URL}/api/testimonials/`);
         setLoading(true);
-        const response = await axios.get(`${BACKEND_URL}/api/testimonials/`);
-        console.log('Testimonials response:', response.data);
-        setTestimonials(response.data);
+        const response = await api.get('/testimonials/');
+        setTestimonials(response.data.length > 0 ? response.data : fallbackTestimonials);
         setError(null);
-      } catch (err) {
-        console.error('Error fetching testimonials:', err);
-        setError(`Failed to load testimonials: ${err.message}`);
+      } catch {
+        setTestimonials(fallbackTestimonials);
+        setError(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTestimonials();
-  }, []);
+  }, [language]);
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -71,7 +67,7 @@ const Testimonials = ({ language }) => {
         {error && (
           <div className="text-center py-12">
             <p className="text-red-400 mb-4">{error}</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="text-red-accent hover:text-red-400 underline"
             >
@@ -84,7 +80,7 @@ const Testimonials = ({ language }) => {
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial) => (
-            <Card 
+            <Card
               key={testimonial.id}
               className="bg-gray-800 border-gray-700 hover:border-red-accent/50 transition-colors duration-300 group relative overflow-hidden"
             >
@@ -131,18 +127,18 @@ const Testimonials = ({ language }) => {
         <div className="text-center mt-16">
           <div className="max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold text-white mb-4">
-              {language === 'ka' 
-                ? 'გახდით ჩვენი შემდეგი კმაყოფილი კლიენტი!' 
+              {language === 'ka'
+                ? 'გახდით ჩვენი შემდეგი კმაყოფილი კლიენტი!'
                 : 'Become Our Next Satisfied Client!'
               }
             </h3>
             <p className="text-gray-300 mb-8">
-              {language === 'ka' 
+              {language === 'ka'
                 ? 'ჩვენ მზად ვართ დაგეხმაროთ თქვენი მონაცემების აღდგენაში პროფესიონალური მიდგომით და საიმედო სერვისით.'
                 : 'We are ready to help you recover your data with a professional approach and reliable service.'
               }
             </p>
-            
+
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-lg mx-auto">
               <div className="text-center">

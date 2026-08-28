@@ -7,9 +7,7 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { useToast } from '../hooks/use-toast';
 import { translations } from '../data/mockData';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import crmApi from '../lib/crmApi';
 
 const Contact = ({ language }) => {
   const t = translations[language];
@@ -28,7 +26,7 @@ const Contact = ({ language }) => {
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -42,43 +40,43 @@ const Contact = ({ language }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = language === 'ka' ? 'სახელი აუცილებელია' : 'Name is required';
     } else if (formData.name.trim().length < 2) {
       newErrors.name = language === 'ka' ? 'სახელი უნდა იყოს მინიმუმ 2 სიმბოლო' : 'Name must be at least 2 characters';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = language === 'ka' ? 'ელ. ფოსტა აუცილებელია' : 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = language === 'ka' ? 'ელ. ფოსტის ფორმატი არასწორია' : 'Email format is invalid';
     }
-    
+
     if (!formData.subject.trim()) {
       newErrors.subject = language === 'ka' ? 'თემა აუცილებელია' : 'Subject is required';
     } else if (formData.subject.trim().length < 5) {
       newErrors.subject = language === 'ka' ? 'თემა უნდა იყოს მინიმუმ 5 სიმბოლო' : 'Subject must be at least 5 characters';
     }
-    
+
     if (!formData.message.trim()) {
       newErrors.message = language === 'ka' ? 'შეტყობინება აუცილებელია' : 'Message is required';
     } else if (formData.message.trim().length < 10) {
       newErrors.message = language === 'ka' ? 'შეტყობინება უნდა იყოს მინიმუმ 10 სიმბოლო' : 'Message must be at least 10 characters';
     }
-    
+
     // Phone is optional, but if provided, should be valid
     if (formData.phone.trim() && !/^[\d\s\+\-\(\)]+$/.test(formData.phone.trim())) {
       newErrors.phone = language === 'ka' ? 'ტელეფონი უნდა შეიცავდეს მხოლოდ ციფრებს და +, -, (, ) სიმბოლოებს' : 'Phone should contain only numbers and +, -, (, ) symbols';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast({
         title: language === 'ka' ? 'შეცდომა' : 'Error',
@@ -87,31 +85,25 @@ const Contact = ({ language }) => {
       });
       return;
     }
-    
+
     try {
       setLoading(true);
-
-      // Check if backend is reachable
-      const response = await axios.post(`${BACKEND_URL}/api/contact/`, {
+      await crmApi.post('/public/contact-messages', {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        phone: formData.phone.trim() || null,
+        phone: formData.phone.trim(),
         subject: formData.subject.trim(),
         message: formData.message.trim()
       }, {
         timeout: 10000 // 10 second timeout
       });
-      
-      console.log('Contact form response:', response.data);
-      
+
       toast({
         title: language === 'ka' ? 'შეტყობინება გაგზავნილია!' : 'Message Sent!',
-        description: language === 'ka' 
+        description: language === 'ka'
           ? 'ჩვენ მალე დაგიკავშირდებით'
           : 'We will contact you soon',
       });
-
-      console.log('Toast called successfully');
 
       // Reset form
       setFormData({
@@ -123,40 +115,38 @@ const Contact = ({ language }) => {
       });
 
     } catch (error) {
-      console.error('Error sending message:', error);
-      
       let errorMessage = '';
       if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        errorMessage = language === 'ka' 
+        errorMessage = language === 'ka'
           ? 'სერვერთან კავშირის დრო ამოიწურა. გთხოვთ, სცადეთ მოგვიანებით.'
           : 'Connection timeout. Please try again later.';
       } else if (error.response) {
         // Server responded with error status
         const status = error.response.status;
-        if (status === 400) {
-          errorMessage = language === 'ka' 
+        if (status === 400 || status === 422) {
+          errorMessage = language === 'ka'
             ? 'მონაცემები არასწორია. გთხოვთ, შეამოწმეთ შეყვანილი ინფორმაცია.'
             : 'Invalid data. Please check your input.';
         } else if (status === 500) {
-          errorMessage = language === 'ka' 
+          errorMessage = language === 'ka'
             ? 'სერვერის შიდა შეცდომა. გთხოვთ, სცადეთ მოგვიანებით.'
             : 'Server error. Please try again later.';
         } else {
-          errorMessage = language === 'ka' 
+          errorMessage = language === 'ka'
             ? `სერვერის შეცდომა (კოდი: ${status}). გთხოვთ, სცადეთ მოგვიანებით.`
             : `Server error (code: ${status}). Please try again later.`;
         }
       } else if (error.request) {
         // Network error
-        errorMessage = language === 'ka' 
+        errorMessage = language === 'ka'
           ? 'კავშირის პრობლემა. გთხოვთ, შეამოწმეთ ინტერნეტ კავშირი და სცადეთ ხელახლა.'
           : 'Network error. Please check your connection and try again.';
       } else {
-        errorMessage = language === 'ka' 
+        errorMessage = language === 'ka'
           ? 'შეტყობინების გაგზავნისას მოხდა შეცდომა. გთხოვთ, სცადეთ ხელახლა.'
           : 'Error sending message. Please try again.';
       }
-      
+
       toast({
         title: language === 'ka' ? 'შეცდომა' : 'Error',
         description: errorMessage,
@@ -227,13 +217,13 @@ const Contact = ({ language }) => {
                 {language === 'ka' ? 'გაგვიგზავნეთ შეტყობინება' : 'Send us a Message'}
               </CardTitle>
               <CardDescription className="text-gray-400">
-                {language === 'ka' 
+                {language === 'ka'
                   ? 'ჩვენ ვპასუხობთ 1 საათის განმავლობაში'
                   : 'We respond within 1 hour'
                 }
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 {/* Name and Email */}
@@ -315,7 +305,7 @@ const Contact = ({ language }) => {
                     required
                     rows={5}
                     className={`bg-gray-800 border-gray-600 text-white ${errors.message ? 'border-red-500' : ''}`}
-                    placeholder={language === 'ka' 
+                    placeholder={language === 'ka'
                       ? 'დაწერეთ თქვენი შეტყობინება აქ...'
                       : 'Write your message here...'
                     }
@@ -324,8 +314,8 @@ const Contact = ({ language }) => {
                 </div>
 
                 {/* Submit Button */}
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-red-accent hover-red-accent text-white py-3 text-lg font-semibold glow-red"
                   disabled={loading}
                 >
@@ -352,7 +342,7 @@ const Contact = ({ language }) => {
                 {language === 'ka' ? 'დაგვიკავშირდით' : 'Get in Touch'}
               </h3>
               <p className="text-gray-300">
-                {language === 'ka' 
+                {language === 'ka'
                   ? 'ჩვენ ვართ აქ დაგეხმაროთ 24/7. იქნება ეს გადაუდებელი შემთხვევა თუ რიგითი კონსულტაცია.'
                   : 'We are here to help you 24/7. Whether it\'s an emergency case or regular consultation.'
                 }
@@ -401,7 +391,7 @@ const Contact = ({ language }) => {
                       {language === 'ka' ? 'გადაუდებელი დახმარება' : 'Emergency Support'}
                     </h4>
                     <p className="text-gray-300 text-sm">
-                      {language === 'ka' 
+                      {language === 'ka'
                         ? 'გადაუდებელი შემთხვევებისთვის დაგვირეკეთ ნებისმიერ დროს. ჩვენ ვართ მზად 24/7!'
                         : 'For emergency cases, call us anytime. We are ready 24/7!'
                       }

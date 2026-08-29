@@ -133,6 +133,12 @@ class WebsiteRequestType(str, Enum):
     contact_message = "contact_message"
 
 
+class InvoiceStatus(str, Enum):
+    draft = "draft"
+    issued = "issued"
+    paid = "paid"
+
+
 # Which statuses belong to which folder (a folder can hold multiple statuses).
 FOLDER_STATUSES: dict[Folder, List[TicketStatus]] = {
     Folder.incoming: [TicketStatus.new],
@@ -280,6 +286,56 @@ class Ticket(TicketBase):
     status: TicketStatus = TicketStatus.new
     folder: Folder = Folder.incoming
     items: List[TicketItem] = Field(default_factory=list)
+    created_at: str = Field(default_factory=_now_iso)
+    updated_at: str = Field(default_factory=_now_iso)
+
+
+# ---------------------------------------------------------------------------
+# Invoice
+# ---------------------------------------------------------------------------
+class InvoiceLineInput(BaseModel):
+    item_id: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(..., min_length=1, max_length=500)
+    unit_price: float = Field(..., ge=0, allow_inf_nan=False)
+
+
+class InvoiceCreate(BaseModel):
+    ticket_id: str = Field(..., min_length=1, max_length=100)
+    lines: List[InvoiceLineInput] = Field(..., min_length=1, max_length=50)
+    note: str = Field(default="", max_length=2000)
+    status: InvoiceStatus = InvoiceStatus.draft
+
+
+class InvoiceStatusUpdate(BaseModel):
+    status: InvoiceStatus
+
+
+class InvoiceLine(BaseModel):
+    item_id: str
+    item_position: int = Field(..., ge=1)
+    device: str = ""
+    description: str = Field(..., min_length=1, max_length=500)
+    quantity: int = Field(default=1, ge=1)
+    unit_price: float = Field(..., ge=0, allow_inf_nan=False)
+    amount: float = Field(..., ge=0, allow_inf_nan=False)
+
+
+class Invoice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: str = Field(default_factory=_new_id)
+    invoice_number: str
+    ticket_id: str
+    ticket_code: int
+    customer_type: CustomerType = CustomerType.physical
+    customer_name: str
+    customer_phone: str = ""
+    company_name: str = ""
+    tax_id: str = ""
+    lines: List[InvoiceLine]
+    note: str = ""
+    status: InvoiceStatus = InvoiceStatus.draft
+    total_amount: float = Field(..., ge=0, allow_inf_nan=False)
     created_at: str = Field(default_factory=_now_iso)
     updated_at: str = Field(default_factory=_now_iso)
 
@@ -503,6 +559,7 @@ class User(BaseModel):
     full_name: str
     email: Optional[EmailStr] = None
     role: UserRole
+    is_primary_admin: bool = False
     is_active: bool = True
     approval_status: AccountApprovalStatus = AccountApprovalStatus.approved
     password_hash: Optional[str] = None
@@ -548,6 +605,7 @@ class UserPublic(BaseModel):
     full_name: str
     email: Optional[EmailStr] = None
     role: UserRole
+    is_primary_admin: bool = False
     is_active: bool
     approval_status: AccountApprovalStatus
     registration_method: str

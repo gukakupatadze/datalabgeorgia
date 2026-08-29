@@ -5,17 +5,17 @@ export const translations = {
     services: "სერვისები",
     about: "ჩვენ შესახებ",
     contact: "კონტაქტი",
-    caseTracking: "საქმის თვალთვალი",
+    caseTracking: "აღდგენის სტატუსი",
 
     // Hero Section
-    heroTitle: "მონაცემთა აღდგენის პროფესიონალები",
-    heroSubtitle: "DataLab Georgia - საქართველოს წამყვანი მონაცემთა აღდგენის სერვისი. ჩვენ ვაღვადგენთ თქვენს მნიშვნელოვან ინფორმაციას ნებისმიერი მოწყობილობიდან.",
+    heroTitle: "მონაცემთა აღდგენა",
+    heroSubtitle: "DataLab Georgia — მონაცემთა აღდგენის პროფესიონალური სერვისი საქართველოში.",
     getStarted: "დაიწყეთ ახლავე",
     freeConsultation: "უფასო კონსულტაცია",
 
     // Services
     servicesTitle: "ჩვენი სერვისები",
-    servicesSubtitle: "თანამედროვე ტექნოლოგიებითა და გამოცდილი სპეციალისტებით ვაღვადგენთ მონაცემებს",
+    servicesSubtitle: "თანამედროვე ტექნოლოგიებითა და გამოცდილი სპეციალისტების ცოდნით ვაღადგენთ თქვენს მნიშვნელოვან მონაცემებს.",
 
     dataRecovery: "HDD აღდგენა",
     dataRecoveryDesc: "დაზიანებული მყარი დისკებიდან ფაილების აღდგენა",
@@ -34,12 +34,12 @@ export const translations = {
     serviceRequestSubtitle: "მოგვწერეთ თქვენი პრობლემის შესახებ და მიიღეთ პროფესიონალური რჩევა",
 
     // Price Estimation
-    priceEstimationTitle: "ფასის გაანგარიშება",
+    priceEstimationTitle: "ფასის კალკულატორი",
     priceEstimationSubtitle: "მიიღეთ წინასწარი ფასის შეფასება",
 
     // Case Tracking
-    caseTrackingTitle: "საქმის თვალთვალი",
-    caseTrackingSubtitle: "შეამოწმეთ თქვენი საქმის სტატუსი",
+    caseTrackingTitle: "აღდგენის სტატუსი",
+    caseTrackingSubtitle: "შეამოწმეთ თქვენი მოწყობილობიდან მონაცემების აღდგენის მიმდინარე ეტაპი.",
 
     // Testimonials
     testimonialsTitle: "მომხმარებელთა გამოხმაურება",
@@ -47,10 +47,10 @@ export const translations = {
 
     // Contact
     contactTitle: "დაგვიკავშირდით",
-    contactSubtitle: "მზად ვართ გაგეხმაროთ 24/7",
+    contactSubtitle: "",
 
     // Footer
-    footerDesc: "DataLab Georgia - საქართველოს საიმედო მონაცემთა აღდგენის სერვისი",
+    footerDesc: "DataLab Georgia — მონაცემთა აღდგენის პროფესიონალური სერვისი საქართველოში.",
     quickLinks: "სწრაფი ლინკები",
     contactInfo: "საკონტაქტო ინფორმაცია",
     allRightsReserved: "ყველა უფლება დაცულია"
@@ -62,7 +62,7 @@ export const translations = {
     services: "Services",
     about: "About",
     contact: "Contact",
-    caseTracking: "Case Tracking",
+    caseTracking: "Recovery Status",
 
     // Hero Section
     heroTitle: "Data Recovery Professionals",
@@ -72,7 +72,7 @@ export const translations = {
 
     // Services
     servicesTitle: "Our Services",
-    servicesSubtitle: "We recover data using modern technologies and experienced specialists",
+    servicesSubtitle: "We use modern technology and specialist expertise to recover your important data.",
 
     dataRecovery: "HDD Recovery",
     dataRecoveryDesc: "File recovery from damaged hard drives",
@@ -91,12 +91,12 @@ export const translations = {
     serviceRequestSubtitle: "Tell us about your problem and get professional advice",
 
     // Price Estimation
-    priceEstimationTitle: "Price Estimation",
+    priceEstimationTitle: "Price Calculator",
     priceEstimationSubtitle: "Get a preliminary price assessment",
 
     // Case Tracking
-    caseTrackingTitle: "Case Tracking",
-    caseTrackingSubtitle: "Check the status of your case",
+    caseTrackingTitle: "Recovery Status",
+    caseTrackingSubtitle: "Check the current stage of data recovery from your device.",
 
     // Testimonials
     testimonialsTitle: "Customer Testimonials",
@@ -104,10 +104,10 @@ export const translations = {
 
     // Contact
     contactTitle: "Contact Us",
-    contactSubtitle: "We're ready to help you 24/7",
+    contactSubtitle: "",
 
     // Footer
-    footerDesc: "DataLab Georgia - Georgia's reliable data recovery service",
+    footerDesc: "DataLab Georgia — professional data recovery service in Georgia.",
     quickLinks: "Quick Links",
     contactInfo: "Contact Information",
     allRightsReserved: "All rights reserved"
@@ -130,7 +130,7 @@ export const services = [
     icon: "Zap",
     titleKey: "dataBackup",
     descKey: "dataBackupDesc",
-    features: ["კონტროლერის დაზიანება", "Flash მეხსიერების ცვეთა", "Firmware კორუფცია", "NAND ჩიპები"],
+    features: ["კონტროლერის დაზიანება", "Flash მეხსიერების ცვეთა", "Firmware დაზიანება", "NAND ჩიპები"],
     features_en: ["Controller damage", "Flash memory wear", "Firmware corruption", "NAND chips"],
     price: "300₾ დან"
   },

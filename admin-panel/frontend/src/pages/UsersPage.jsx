@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LogOut, ShieldCheck, UserPlus, Users, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LogOut, ShieldCheck, UserPlus, Users, XCircle , Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { usersApi } from "@/lib/api";
@@ -57,6 +57,14 @@ export default function UsersPage() {
     mutationFn: ({ id, payload }) => usersApi.update(id, payload),
     onSuccess: () => {
       toast.success(t("users.updated"));
+      refresh();
+    },
+    onError: (error) => toast.error(errorMessage(error, t("users.error"))),
+  });
+  const deleteUser = useMutation({
+    mutationFn: usersApi.remove,
+    onSuccess: () => {
+      toast.success(t("users.deleted"));
       refresh();
     },
     onError: (error) => toast.error(errorMessage(error, t("users.error"))),
@@ -156,6 +164,7 @@ export default function UsersPage() {
                       </Select>
                       <Button size="sm" className="h-9 gap-1.5" disabled={approveUser.isPending || rejectUser.isPending} onClick={() => approveUser.mutate({ id: entry.id, role: selectedRole })}><CheckCircle2 className="h-4 w-4" />{t("users.approve")}</Button>
                       <Button size="sm" variant="outline" className="h-9 gap-1.5 text-destructive" disabled={approveUser.isPending || rejectUser.isPending} onClick={() => rejectUser.mutate(entry.id)}><XCircle className="h-4 w-4" />{t("users.reject")}</Button>
+                      <Button size="sm" variant="outline" className="h-9 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground" disabled={deleteUser.isPending} onClick={() => { if (window.confirm(t("users.deleteConfirm", { name: entry.full_name }))) deleteUser.mutate(entry.id); }}><Trash2 className="h-4 w-4" />{t("users.delete")}</Button>
                     </div>
                   </article>
                 );
@@ -221,6 +230,12 @@ export default function UsersPage() {
             <div className="divide-y">
               {managedUsers.map((entry) => {
                 const isSelf = entry.id === currentUser?.id;
+                const isPrimaryAdmin = entry.is_primary_admin;
+                const confirmDelete = () => {
+                  if (window.confirm(t("users.deleteConfirm", { name: entry.full_name }))) {
+                    deleteUser.mutate(entry.id);
+                  }
+                };
                 return (
                   <article key={entry.id} className={`p-4 ${entry.is_active ? "" : "bg-muted/40 opacity-70"}`}>
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
@@ -233,6 +248,7 @@ export default function UsersPage() {
                           <div className="flex items-center gap-2">
                             <p className="truncate text-sm font-semibold">{entry.full_name}</p>
                             {isSelf ? <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">{t("users.you")}</span> : null}
+                            {isPrimaryAdmin ? <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{t("users.primaryAdmin")}</span> : null}
                           </div>
                           <p className="truncate text-xs text-muted-foreground">{entry.email}</p>
                           {entry.approval_status === "rejected" ? <p className="mt-0.5 text-[11px] font-medium text-destructive">{t("users.statusRejected")}</p> : null}
@@ -242,7 +258,7 @@ export default function UsersPage() {
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Select value={entry.role} disabled={updateUser.isPending} onValueChange={(role) => updateUser.mutate({ id: entry.id, payload: { role } })}>
+                        <Select value={entry.role} disabled={isPrimaryAdmin || updateUser.isPending} onValueChange={(role) => updateUser.mutate({ id: entry.id, payload: { role } })}>
                           <SelectTrigger className="h-9 w-[145px]"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {ROLES.map((role) => <SelectItem key={role} value={role}>{t(`role.${role}`)}</SelectItem>)}
@@ -250,12 +266,18 @@ export default function UsersPage() {
                         </Select>
                         <label className="flex h-9 items-center gap-2 rounded-md border px-3 text-xs">
                           {entry.is_active ? t("users.active") : t("users.disabled")}
-                          <Switch checked={entry.is_active} disabled={isSelf || updateUser.isPending} onCheckedChange={(is_active) => updateUser.mutate({ id: entry.id, payload: { is_active } })} />
+                          <Switch checked={entry.is_active} disabled={isSelf || isPrimaryAdmin || updateUser.isPending} onCheckedChange={(is_active) => updateUser.mutate({ id: entry.id, payload: { is_active } })} />
                         </label>
-                        <Button variant="outline" size="sm" className="h-9 gap-1.5" disabled={isSelf || revokeSessions.isPending} onClick={() => revokeSessions.mutate(entry.id)}>
+                        <Button variant="outline" size="sm" className="h-9 gap-1.5" disabled={isSelf || isPrimaryAdmin || revokeSessions.isPending} onClick={() => revokeSessions.mutate(entry.id)}>
                           <LogOut className="h-3.5 w-3.5" />
                           {t("users.revoke")}
                         </Button>
+                        {!isPrimaryAdmin ? (
+                          <Button variant="outline" size="sm" className="h-9 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground" disabled={isSelf || deleteUser.isPending} onClick={confirmDelete}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                            {t("users.delete")}
+                          </Button>
+                        ) : null}
                       </div>
                     </div>
                   </article>

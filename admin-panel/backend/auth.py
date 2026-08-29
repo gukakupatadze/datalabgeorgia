@@ -205,6 +205,7 @@ class AuthService:
                 full_name=self.settings.initial_admin_name,
                 email=self.settings.initial_admin_email,
                 role=UserRole.admin,
+                is_primary_admin=True,
                 approval_status=AccountApprovalStatus.approved,
                 password_hash=initial_password_hash,
             )
@@ -217,6 +218,25 @@ class AuthService:
             except DuplicateKeyError:
                 # A concurrent process may have inserted the bootstrap admin.
                 pass
+            await self.users.update_many(
+                {
+                    "is_primary_admin": True,
+                    "email": {"$ne": self.settings.initial_admin_email},
+                },
+                {"$set": {"is_primary_admin": False, "updated_at": _now_iso()}},
+            )
+            await self.users.update_one(
+                {"email": self.settings.initial_admin_email},
+                {
+                    "$set": {
+                        "role": UserRole.admin.value,
+                        "is_primary_admin": True,
+                        "approval_status": AccountApprovalStatus.approved.value,
+                        "is_active": True,
+                        "updated_at": _now_iso(),
+                    }
+                },
+            )
             if initial_password_hash:
                 await self.users.update_one(
                     {
@@ -244,6 +264,16 @@ class AuthService:
     def public_user(user: User) -> UserPublic:
         return UserPublic(**user.model_dump())
 
+    def is_primary_admin(self, user: User) -> bool:
+        return bool(
+            user.is_primary_admin
+            or (
+                self.settings.initial_admin_email
+                and str(user.email or "").lower()
+                == self.settings.initial_admin_email
+            )
+        )
+
     async def find_user(self, user_id: str) -> Optional[User]:
         doc = await self.users.find_one({"id": user_id}, {"_id": 0})
         return User(**doc) if doc else None
@@ -269,6 +299,7 @@ class AuthService:
         }
         users.sort(
             key=lambda user: (
+                not user.is_primary_admin,
                 order[user.approval_status],
                 not user.is_active,
                 user.full_name.casefold(),
@@ -341,6 +372,8 @@ class AuthService:
         existing = await self.find_user(user_id)
         if not existing:
             return None
+        if self.is_primary_admin(existing) and payload.role != UserRole.admin:
+            raise ValueError("The primary administrator cannot be demoted")
         if (
             payload.role in {UserRole.customer, UserRole.legal_customer}
             and not existing.phone_normalized
@@ -373,6 +406,8 @@ class AuthService:
         existing = await self.find_user(user_id)
         if not existing:
             return None
+        if self.is_primary_admin(existing):
+            raise ValueError("The primary administrator cannot be rejected")
         await self.users.update_one(
             {"id": user_id},
             {
@@ -394,6 +429,11 @@ class AuthService:
             return None
 
         changes = payload.model_dump(exclude_unset=True, mode="json")
+        if self.is_primary_admin(existing) and (
+            changes.get("role", UserRole.admin.value) != UserRole.admin.value
+            or changes.get("is_active") is False
+        ):
+            raise ValueError("The primary administrator cannot be disabled or demoted")
         if "phone" in changes:
             normalized = _normalize_phone(changes["phone"])
             changes["phone_normalized"] = normalized or None
@@ -431,6 +471,26 @@ class AuthService:
         if changes.get("is_active") is False:
             await self.revoke_sessions(user_id)
         return self.public_user(await self.find_user(user_id))
+
+    async def delete_user(self, user_id: str, acting_user_id: str) -> bool:
+        existing = await self.find_user(user_id)
+        if not existing:
+            return False
+        if self.is_primary_admin(existing):
+            raise ValueError("The primary administrator cannot be deleted")
+        if existing.id == acting_user_id:
+            raise ValueError("You cannot delete your own account")
+
+        if existing.role == UserRole.admin and existing.is_active:
+            active_admins = await self.users.count_documents(
+                {"role": UserRole.admin.value, "is_active": True}
+            )
+            if active_admins <= 1:
+                raise ValueError("The last active administrator cannot be deleted")
+
+        await self.revoke_sessions(user_id)
+        result = await self.users.delete_one({"id": user_id})
+        return result.deleted_count == 1
 
     async def revoke_sessions(self, user_id: str) -> int:
         result = await self.sessions.delete_many({"user_id": user_id})

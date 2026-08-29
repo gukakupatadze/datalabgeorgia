@@ -167,19 +167,19 @@ const CaseTracking = ({ language }) => {
             <CardHeader>
               <CardTitle className="text-2xl text-white flex items-center">
                 <Search className="w-6 h-6 text-red-accent mr-3" />
-                {language === 'ka' ? 'საქმის ძიება' : 'Track your case'}
+                {language === 'ka' ? 'ტიკეტის ძიება' : 'Ticket Search'}
               </CardTitle>
               <CardDescription className="text-gray-400">
                 {language === 'ka'
-                  ? 'მოძებნეთ მიმდინარე საქმე ტიკეტის კოდით ან ტელეფონის ნომრით'
-                  : 'Find an active case by ticket code or phone number'}
+                  ? 'შეიყვანეთ ტიკეტის კოდი ან ტელეფონის ნომერი.'
+                  : 'Enter your ticket code or phone number.'}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="tracking-query" className="text-gray-300">
-                  {language === 'ka' ? 'ტიკეტის კოდი ან ტელეფონი' : 'Ticket code or phone'}
+                  {language === 'ka' ? 'ტიკეტის კოდი ან ტელეფონის ნომერი' : 'Ticket code or phone number'}
                 </Label>
                 <Input
                   id="tracking-query"
@@ -190,7 +190,7 @@ const CaseTracking = ({ language }) => {
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={(event) => event.key === 'Enter' && trackCase()}
                   className="bg-gray-800 border-gray-600 text-white"
-                  placeholder={language === 'ka' ? 'მაგ: 10001 ან 555123456' : 'e.g. 10001 or 555123456'}
+                  placeholder={language === 'ka' ? 'მაგ: 10001 ან 5XX XX XX XX' : 'e.g. 10001 or 5XX XX XX XX'}
                 />
               </div>
 
@@ -208,7 +208,7 @@ const CaseTracking = ({ language }) => {
                 ) : (
                   <>
                     <Search className="w-4 h-4 mr-2" />
-                    {language === 'ka' ? 'საქმის ძიება' : 'Track case'}
+                    {language === 'ka' ? 'სტატუსის ნახვა' : 'View Status'}
                   </>
                 )}
               </Button>
@@ -251,7 +251,7 @@ const CaseTracking = ({ language }) => {
             <CardHeader>
               <CardTitle className="text-2xl text-white flex items-center">
                 <Package className="w-6 h-6 text-red-accent mr-3" />
-                {language === 'ka' ? 'საქმის ინფორმაცია' : 'Case information'}
+                {language === 'ka' ? 'აღდგენის სტატუსი' : 'Recovery Status'}
               </CardTitle>
             </CardHeader>
 
@@ -319,8 +319,8 @@ const CaseTracking = ({ language }) => {
                   <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <p className="text-gray-400">
                     {language === 'ka'
-                      ? 'შეიყვანეთ ტიკეტის კოდი ან ტელეფონის ნომერი'
-                      : 'Enter a ticket code or phone number'}
+                      ? 'შეიყვანეთ ტიკეტის კოდი ან ტელეფონის ნომერი, რათა ნახოთ მონაცემთა აღდგენის პროცესის მიმდინარე სტატუსი.'
+                      : 'Enter a ticket code or phone number to view the current status of the data recovery process.'}
                   </p>
                 </div>
               )}

@@ -43,6 +43,7 @@ async def check_auth_guards() -> None:
     assert len(users) == 1
     assert users[0].email == "owner@gmail.com"
     assert users[0].role == UserRole.admin
+    assert users[0].is_primary_admin is True
     assert users[0].is_active is True
     assert users[0].approval_status == AccountApprovalStatus.approved
 
@@ -145,6 +146,16 @@ async def check_auth_guards() -> None:
         pass
     else:
         raise AssertionError("The last active administrator was disabled")
+
+    try:
+        await service.delete_user(users[0].id, users[0].id)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("The primary administrator was deleted")
+
+    assert await service.delete_user(customer.id, users[0].id) is True
+    assert await service.find_user(customer.id) is None
 
     request = Request({"type": "http", "headers": [], "method": "GET", "path": "/"})
     try:

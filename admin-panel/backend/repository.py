@@ -28,6 +28,10 @@ from models import (
     AnalyticsSummary,
     AnalyticsTrendPoint,
     Folder,
+    Invoice,
+    InvoiceCreate,
+    InvoiceLine,
+    InvoiceStatus,
     StatusCounts,
     Ticket,
     TicketCreate,
@@ -254,6 +258,7 @@ class CRMRepository:
         self.activities = db.activities
         self.counters = db.counters
         self.website_requests = db.website_requests
+        self.invoices = db.invoices
         self.use_transactions = use_transactions
 
     @staticmethod
@@ -337,6 +342,16 @@ class CRMRepository:
         await self.website_requests.create_index(
             [("status", 1), ("read_at", 1), ("created_at", -1)],
             name="ix_website_request_unread_created",
+        )
+        await self.invoices.create_index("id", unique=True, name="uq_invoice_id")
+        await self.invoices.create_index(
+            "invoice_number", unique=True, name="uq_invoice_number"
+        )
+        await self.invoices.create_index(
+            [("ticket_id", 1), ("created_at", -1)], name="ix_invoice_ticket_created"
+        )
+        await self.invoices.create_index(
+            [("status", 1), ("updated_at", -1)], name="ix_invoice_status_updated"
         )
 
         # Lossless migration for tickets created before multi-device support.
@@ -444,6 +459,94 @@ class CRMRepository:
                 }
             },
         )
+
+    # ------------------------------------------------------------------
+    # Invoices
+    # ------------------------------------------------------------------
+    async def create_invoice(self, payload: InvoiceCreate) -> Invoice:
+        async with self._transaction() as session:
+            ticket = await self.get_ticket(payload.ticket_id, session=session)
+            if not ticket or ticket.ticket_code is None:
+                raise LookupError("Ticket not found")
+
+            ticket_items = {item.id: item for item in ticket.items}
+            if len(ticket_items) != len(ticket.items):
+                raise ValueError("Ticket contains duplicate item identifiers")
+
+            requested_ids = [line.item_id for line in payload.lines]
+            if len(set(requested_ids)) != len(requested_ids):
+                raise ValueError("An invoice item can only be selected once")
+            if any(item_id not in ticket_items for item_id in requested_ids):
+                raise ValueError("Invoice contains an item outside the selected ticket")
+
+            sequence = await self.counters.find_one_and_update(
+                {"_id": f"invoice:{ticket.id}"},
+                {"$inc": {"seq": 1}},
+                upsert=True,
+                return_document=ReturnDocument.AFTER,
+                **self._session_kwargs(session),
+            )
+            invoice_sequence = int(sequence["seq"])
+            invoice_number = (
+                str(ticket.ticket_code)
+                if invoice_sequence == 1
+                else f"{ticket.ticket_code}-{invoice_sequence}"
+            )
+            lines = []
+            for requested in payload.lines:
+                item = ticket_items[requested.item_id]
+                description = requested.description.strip()
+                if not description:
+                    raise ValueError("Invoice description cannot be empty")
+                price = round(float(requested.unit_price), 2)
+                lines.append(
+                    InvoiceLine(
+                        item_id=item.id,
+                        item_position=item.position,
+                        device=item.device or "",
+                        description=description,
+                        unit_price=price,
+                        amount=price,
+                    )
+                )
+
+            invoice = Invoice(
+                invoice_number=invoice_number,
+                ticket_id=ticket.id,
+                ticket_code=ticket.ticket_code,
+                customer_type=ticket.customer_type,
+                customer_name=ticket.customer_name,
+                customer_phone=ticket.customer_phone,
+                company_name=ticket.company_name or "",
+                tax_id=ticket.tax_id or "",
+                lines=lines,
+                note=payload.note.strip(),
+                status=payload.status,
+                total_amount=round(sum(line.amount for line in lines), 2),
+            )
+            await self.invoices.insert_one(
+                invoice.model_dump(mode="json"), **self._session_kwargs(session)
+            )
+            return invoice
+
+    async def list_invoices(self) -> List[Invoice]:
+        cursor = self.invoices.find({}, {"_id": 0}).sort([("updated_at", -1)])
+        docs = await cursor.limit(500).to_list(500)
+        return [Invoice(**doc) for doc in docs]
+
+    async def get_invoice(self, invoice_id: str) -> Optional[Invoice]:
+        doc = await self.invoices.find_one({"id": invoice_id}, {"_id": 0})
+        return Invoice(**doc) if doc else None
+
+    async def update_invoice_status(
+        self, invoice_id: str, status: InvoiceStatus
+    ) -> Optional[Invoice]:
+        doc = await self.invoices.find_one_and_update(
+            {"id": invoice_id},
+            {"$set": {"status": status.value, "updated_at": _now_iso()}},
+            return_document=ReturnDocument.AFTER,
+        )
+        return Invoice(**doc) if doc else None
 
     # ------------------------------------------------------------------
     # Ticket code (sequential, unique 5-digit starting at 10001)

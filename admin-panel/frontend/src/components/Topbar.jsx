@@ -1,4 +1,4 @@
-import { BarChart3, Bell, ChevronDown, ClipboardList, LogOut, Plus, Search, UserCog, Wrench } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, ClipboardList, LogOut, Plus, ReceiptText, Search, UserCog, Wrench } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -99,6 +99,9 @@ export function Topbar({ title, search, onSearch, onSearchSubmit, onCreate }) {
             <Button variant={location.pathname === "/users" ? "secondary" : "ghost"} size="icon" className="h-9 w-9" onClick={() => navigate("/users")} aria-label={t("users.title")} title={t("users.title")}>
               <UserCog className="h-4 w-4" />
             </Button>
+            <Button variant={location.pathname === "/invoices" ? "secondary" : "ghost"} size="icon" className="h-9 w-9" onClick={() => navigate("/invoices")} aria-label={t("invoices.title")} title={t("invoices.title")}>
+              <ReceiptText className="h-4 w-4" />
+            </Button>
             <Button variant={location.pathname === "/requests" ? "secondary" : "ghost"} size="icon" className="relative h-9 w-9" onClick={() => navigate("/requests")} aria-label={t("requests.title")} title={t("requests.title")}>
               <Bell className="h-4 w-4" />
               {pendingCount > 0 ? <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">{pendingCount > 99 ? "99+" : pendingCount}</span> : null}
@@ -143,6 +146,10 @@ export function Topbar({ title, search, onSearch, onSearchSubmit, onCreate }) {
                 <DropdownMenuItem onSelect={() => navigate("/analytics")}>
                   <BarChart3 />
                   {t("analytics.title")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate("/invoices")}>
+                  <ReceiptText />
+                  {t("invoices.title")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => navigate("/requests")}>
                   <Bell />

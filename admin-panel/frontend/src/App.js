@@ -11,6 +11,7 @@ import UsersPage from "@/pages/UsersPage";
 import CustomerAccountPage from "@/pages/CustomerAccountPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import WebsiteRequestsPage from "@/pages/WebsiteRequestsPage";
+import InvoicesPage from "@/pages/InvoicesPage";
 
 function ProtectedRoute({ children, adminOnly = false, staffOnly = false }) {
   const { user, loading } = useAuth();
@@ -49,6 +50,7 @@ function App() {
                 <Route path="/users" element={<ProtectedRoute adminOnly><UsersPage /></ProtectedRoute>} />
                 <Route path="/analytics" element={<ProtectedRoute adminOnly><AnalyticsPage /></ProtectedRoute>} />
                 <Route path="/requests" element={<ProtectedRoute adminOnly><WebsiteRequestsPage /></ProtectedRoute>} />
+                <Route path="/invoices" element={<ProtectedRoute adminOnly><InvoicesPage /></ProtectedRoute>} />
                 <Route path="/account" element={<CustomerRoute><CustomerAccountPage /></CustomerRoute>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

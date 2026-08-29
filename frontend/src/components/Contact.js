@@ -162,10 +162,11 @@ const Contact = ({ language }) => {
       icon: Phone,
       titleKa: 'ტელეფონი',
       titleEn: 'Phone',
-      valueKa: '+995 XXX XXX XXX',
-      valueEn: '+995 XXX XXX XXX',
-      descKa: '24/7 ხელმისაწვდომი',
-      descEn: 'Available 24/7'
+      valueKa: '+995 574 00 19 30',
+      valueEn: '+995 574 00 19 30',
+      href: 'tel:+995574001930',
+      descKa: '',
+      descEn: ''
     },
     {
       icon: Mail,
@@ -173,26 +174,27 @@ const Contact = ({ language }) => {
       titleEn: 'Email',
       valueKa: 'info@datalabgeorgia.ge',
       valueEn: 'info@datalabgeorgia.ge',
-      descKa: 'სწრაფი პასუხი',
-      descEn: 'Quick Response'
+      href: 'mailto:info@datalabgeorgia.ge',
+      descKa: '',
+      descEn: ''
     },
     {
       icon: MapPin,
       titleKa: 'მისამართი',
       titleEn: 'Address',
-      valueKa: 'თბილისი, საქართველო',
-      valueEn: 'Tbilisi, Georgia',
-      descKa: 'ოფისში ვიზიტი შესაძლებელია',
-      descEn: 'Office visits available'
+      valueKa: 'თბილისი, ცოტნე დადიანის 7ბ',
+      valueEn: '7b Tsotne Dadiani St., Tbilisi',
+      descKa: '',
+      descEn: ''
     },
     {
       icon: Clock,
       titleKa: 'სამუშაო საათები',
       titleEn: 'Working Hours',
-      valueKa: '24/7',
-      valueEn: '24/7',
-      descKa: 'გადაუდებელი შემთხვევები',
-      descEn: 'Emergency cases'
+      valueKa: '10:00–19:00',
+      valueEn: '10:00–19:00',
+      descKa: 'ორშაბათი–შაბათი',
+      descEn: 'Monday–Saturday'
     }
   ];
 
@@ -204,9 +206,6 @@ const Contact = ({ language }) => {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             {t.contactTitle}
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            {t.contactSubtitle}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -272,7 +271,7 @@ const Contact = ({ language }) => {
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       className={`bg-gray-800 border-gray-600 text-white ${errors.phone ? 'border-red-500' : ''}`}
-                      placeholder="+995 XXX XXX XXX"
+                      placeholder="+995 5XX XX XX XX"
                     />
                     {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
                   </div>
@@ -341,12 +340,6 @@ const Contact = ({ language }) => {
               <h3 className="text-2xl font-bold text-white mb-4">
                 {language === 'ka' ? 'დაგვიკავშირდით' : 'Get in Touch'}
               </h3>
-              <p className="text-gray-300">
-                {language === 'ka'
-                  ? 'ჩვენ ვართ აქ დაგეხმაროთ 24/7. იქნება ეს გადაუდებელი შემთხვევა თუ რიგითი კონსულტაცია.'
-                  : 'We are here to help you 24/7. Whether it\'s an emergency case or regular consultation.'
-                }
-              </p>
             </div>
 
             {/* Contact Info Cards */}
@@ -364,12 +357,20 @@ const Contact = ({ language }) => {
                         <h4 className="text-white font-semibold mb-1">
                           {language === 'ka' ? info.titleKa : info.titleEn}
                         </h4>
-                        <p className="text-red-accent font-medium mb-1">
-                          {language === 'ka' ? info.valueKa : info.valueEn}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          {language === 'ka' ? info.descKa : info.descEn}
-                        </p>
+                        {info.href ? (
+                          <a href={info.href} className="mb-1 block font-medium text-red-accent transition-colors duration-300 hover:text-white">
+                            {language === 'ka' ? info.valueKa : info.valueEn}
+                          </a>
+                        ) : (
+                          <p className="mb-1 font-medium text-red-accent">
+                            {language === 'ka' ? info.valueKa : info.valueEn}
+                          </p>
+                        )}
+                        {(language === 'ka' ? info.descKa : info.descEn) && (
+                          <p className="text-gray-400 text-sm">
+                            {language === 'ka' ? info.descKa : info.descEn}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -392,8 +393,8 @@ const Contact = ({ language }) => {
                     </h4>
                     <p className="text-gray-300 text-sm">
                       {language === 'ka'
-                        ? 'გადაუდებელი შემთხვევებისთვის დაგვირეკეთ ნებისმიერ დროს. ჩვენ ვართ მზად 24/7!'
-                        : 'For emergency cases, call us anytime. We are ready 24/7!'
+                        ? 'გადაუდებელი შემთხვევებისთვის დაგვირეკეთ.'
+                        : 'For urgent cases, call us.'
                       }
                     </p>
                   </div>

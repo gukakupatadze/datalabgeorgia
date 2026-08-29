@@ -61,6 +61,10 @@ export const usersApi = {
     const { data } = await http.patch(`/users/${id}`, payload);
     return data;
   },
+  remove: async (id) => {
+    const { data } = await http.delete(`/users/${id}`);
+    return data;
+  },
   revokeSessions: async (id) => {
     const { data } = await http.post(`/users/${id}/revoke-sessions`);
     return data;
@@ -178,6 +182,25 @@ export const ticketsApi = {
   },
   customers: async () => {
     const { data } = await http.get("/customers");
+    return data;
+  },
+};
+
+export const invoicesApi = {
+  list: async () => {
+    const { data } = await http.get("/invoices");
+    return data;
+  },
+  get: async (id) => {
+    const { data } = await http.get(`/invoices/${id}`);
+    return data;
+  },
+  create: async (payload) => {
+    const { data } = await http.post("/invoices", payload);
+    return data;
+  },
+  updateStatus: async (id, status) => {
+    const { data } = await http.patch(`/invoices/${id}/status`, { status });
     return data;
   },
 };

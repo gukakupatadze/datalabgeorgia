@@ -11,6 +11,9 @@ from pymongo.errors import DuplicateKeyError
 from models import (
     ActivityType,
     AnalyticsPeriod,
+    InvoiceCreate,
+    InvoiceLineInput,
+    InvoiceStatus,
     Ticket,
     TicketCreate,
     TicketItemCreate,
@@ -76,6 +79,9 @@ async def check_integrity_guards() -> None:
     assert "uq_ticket_id" in indexes
     assert "uq_ticket_code" in indexes
     assert "ix_ticket_queue" in indexes
+    invoice_indexes = await repository.invoices.index_information()
+    assert "uq_invoice_id" in invoice_indexes
+    assert "uq_invoice_number" in invoice_indexes
 
     await repository.update_ticket(
         created.id,
@@ -133,6 +139,66 @@ async def check_integrity_guards() -> None:
     )
     assert len(multi.items) == 2
     assert multi.cost_estimate == 150
+
+    first_invoice = await repository.create_invoice(
+        InvoiceCreate(
+            ticket_id=multi.id,
+            lines=[
+                InvoiceLineInput(
+                    item_id=multi.items[0].id,
+                    description="SSD data recovery",
+                    unit_price=100,
+                )
+            ],
+            note="Internal note",
+            status=InvoiceStatus.draft,
+        )
+    )
+    second_invoice = await repository.create_invoice(
+        InvoiceCreate(
+            ticket_id=multi.id,
+            lines=[
+                InvoiceLineInput(
+                    item_id=multi.items[1].id,
+                    description="HDD data recovery",
+                    unit_price=50,
+                )
+            ],
+            status=InvoiceStatus.issued,
+        )
+    )
+    assert first_invoice.invoice_number == str(multi.ticket_code)
+    assert second_invoice.invoice_number == f"{multi.ticket_code}-2"
+    assert first_invoice.note == "Internal note"
+    assert first_invoice.total_amount == 100
+    assert second_invoice.total_amount == 50
+    invoices = await repository.list_invoices()
+    assert {invoice.id for invoice in invoices} == {
+        first_invoice.id,
+        second_invoice.id,
+    }
+    assert (await repository.get_invoice(first_invoice.id)).id == first_invoice.id
+    paid_invoice = await repository.update_invoice_status(
+        first_invoice.id, InvoiceStatus.paid
+    )
+    assert paid_invoice is not None and paid_invoice.status == InvoiceStatus.paid
+    try:
+        await repository.create_invoice(
+            InvoiceCreate(
+                ticket_id=multi.id,
+                lines=[
+                    InvoiceLineInput(
+                        item_id="outside-ticket",
+                        description="Invalid item",
+                        unit_price=1,
+                    )
+                ],
+            )
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Invoice item outside the ticket should be rejected")
 
     second = multi.items[1]
     multi = await repository.update_ticket_item(

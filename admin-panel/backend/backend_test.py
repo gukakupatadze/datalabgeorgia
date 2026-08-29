@@ -45,6 +45,8 @@ class CRMAPITester:
                 response = requests.post(url, json=data, headers=headers, timeout=10)
             elif method == 'PUT':
                 response = requests.put(url, json=data, headers=headers, timeout=10)
+            elif method == 'PATCH':
+                response = requests.patch(url, json=data, headers=headers, timeout=10)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers, timeout=10)
             else:
@@ -1620,6 +1622,71 @@ class CRMAPITester:
 
         return result
 
+    def test_invoices(self):
+        """Create, list, open and update a database-backed invoice."""
+        if not self.test_ticket_id:
+            self.log("Skipping invoice tests: No ticket ID available")
+            return False
+
+        ticket_response = requests.get(
+            f"{BASE_URL}/tickets/{self.test_ticket_id}", timeout=10
+        )
+        ticket = ticket_response.json()
+        item = ticket["items"][0]
+        payload = {
+            "ticket_id": self.test_ticket_id,
+            "lines": [
+                {
+                    "item_id": item["id"],
+                    "description": "Data recovery service",
+                    "unit_price": 175.5,
+                }
+            ],
+            "note": "Internal test note",
+            "status": "draft",
+        }
+        created_ok, invoice = self.run_test(
+            "POST /api/invoices - persist invoice",
+            "POST",
+            "invoices",
+            201,
+            data=payload,
+        )
+        if not created_ok:
+            return False
+        invoice_id = invoice.get("id")
+        number_ok = invoice.get("invoice_number") == str(ticket["ticket_code"])
+        amount_ok = invoice.get("total_amount") == 175.5
+        if not (number_ok and amount_ok):
+            self.tests_passed -= 1
+            self.log("Invoice number or amount is incorrect", False)
+            return False
+
+        list_ok, invoices = self.run_test(
+            "GET /api/invoices - list persisted invoices", "GET", "invoices", 200
+        )
+        get_ok, opened = self.run_test(
+            "GET /api/invoices/{id} - open invoice",
+            "GET",
+            f"invoices/{invoice_id}",
+            200,
+        )
+        update_ok, paid = self.run_test(
+            "PATCH /api/invoices/{id}/status - mark paid",
+            "PATCH",
+            f"invoices/{invoice_id}/status",
+            200,
+            data={"status": "paid"},
+        )
+        return (
+            list_ok
+            and any(row.get("id") == invoice_id for row in invoices)
+            and get_ok
+            and opened.get("note") == "Internal test note"
+            and update_ok
+            and paid.get("status") == "paid"
+        )
+
     def test_delete_ticket(self):
         """Test DELETE /api/tickets/{id} - delete ticket and activities."""
         if not self.test_ticket_id:
@@ -1688,6 +1755,7 @@ class CRMAPITester:
         self.test_resolution_fixed()
         self.test_resolution_not_fixed()
         self.test_accessories_no_power_adapter()
+        self.test_invoices()
         self.test_delete_ticket()
 
         # Summary

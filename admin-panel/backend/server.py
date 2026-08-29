@@ -27,6 +27,9 @@ from models import (
     CustomerPortalItem,
     CustomerPortalTicket,
     Folder,
+    Invoice,
+    InvoiceCreate,
+    InvoiceStatusUpdate,
     StatusCounts,
     Ticket,
     TicketCreate,
@@ -124,7 +127,7 @@ class WebsiteRequestReview(BaseModel):
 
 class PriceEstimateRequest(BaseModel):
     device_type: Literal["hdd", "ssd", "raid", "usb", "sd"]
-    problem_type: Literal["logical", "physical", "water", "fire"]
+    problem_type: Literal["physical", "deleted_formatted", "system", "unread"]
     urgency: Literal["standard", "urgent", "emergency"]
 
 
@@ -188,17 +191,26 @@ async def root():
 @public_router.post("/price-estimate/")
 async def price_estimate(payload: PriceEstimateRequest):
     """Return a transparent preliminary estimate for the public calculator."""
-    base_prices = {"hdd": 150, "ssd": 300, "raid": 500, "usb": 150, "sd": 150}
-    damage_multiplier = {"logical": 1, "physical": 1.5, "water": 2, "fire": 2.5}
+    price_matrix = {
+        "physical": {"hdd": 300, "ssd": 400, "raid": 700, "usb": 100, "sd": 100},
+        "deleted_formatted": {
+            "hdd": 150,
+            "ssd": 200,
+            "raid": 600,
+            "usb": 150,
+            "sd": 150,
+        },
+        "system": {"hdd": 100, "ssd": 200, "raid": 300, "usb": 100, "sd": 100},
+        "unread": {"hdd": 200, "ssd": 400, "raid": 700, "usb": 150, "sd": 150},
+    }
     urgency_multiplier = {"standard": 1, "urgent": 1.5, "emergency": 2}
     timeframes = {
         "standard": ("5-7 სამუშაო დღე", "5-7 business days"),
-        "urgent": ("2-3 სამუშაო დღე", "2-3 business days"),
+        "urgent": ("1-2 სამუშაო დღე", "1-2 business days"),
         "emergency": ("დაახლოებით 24 საათი", "Approximately 24 hours"),
     }
     amount = round(
-        base_prices[payload.device_type]
-        * damage_multiplier[payload.problem_type]
+        price_matrix[payload.problem_type][payload.device_type]
         * urgency_multiplier[payload.urgency]
     )
     timeframe_ka, timeframe_en = timeframes[payload.urgency]
@@ -582,10 +594,24 @@ async def approve_user(user_id: str, payload: UserApproval):
 
 @users_router.post("/{user_id}/reject", response_model=UserPublic)
 async def reject_user(user_id: str):
-    user = await auth.reject_user(user_id)
+    try:
+        user = await auth.reject_user(user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+@users_router.delete("/{user_id}")
+async def delete_user(user_id: str, current=Depends(auth.current_user)):
+    try:
+        deleted = await auth.delete_user(user_id, current.id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not deleted:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"success": True}
 
 
 @users_router.post("/{user_id}/revoke-sessions")
@@ -803,6 +829,45 @@ async def delete_ticket(ticket_id: str, user=Depends(auth.current_user)):
     if not ok:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return {"success": True}
+
+
+@api_router.get("/invoices", response_model=List[Invoice])
+async def list_invoices(user=Depends(auth.current_user)):
+    _require_role(user, UserRole.admin)
+    return await repo.list_invoices()
+
+
+@api_router.post("/invoices", response_model=Invoice, status_code=201)
+async def create_invoice(payload: InvoiceCreate, user=Depends(auth.current_user)):
+    _require_role(user, UserRole.admin)
+    try:
+        return await repo.create_invoice(payload)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@api_router.get("/invoices/{invoice_id}", response_model=Invoice)
+async def get_invoice(invoice_id: str, user=Depends(auth.current_user)):
+    _require_role(user, UserRole.admin)
+    invoice = await repo.get_invoice(invoice_id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return invoice
+
+
+@api_router.patch("/invoices/{invoice_id}/status", response_model=Invoice)
+async def update_invoice_status(
+    invoice_id: str,
+    payload: InvoiceStatusUpdate,
+    user=Depends(auth.current_user),
+):
+    _require_role(user, UserRole.admin)
+    invoice = await repo.update_invoice_status(invoice_id, payload.status)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return invoice
 
 
 @api_router.get("/tickets/{ticket_id}/activities", response_model=List[Activity])

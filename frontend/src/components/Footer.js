@@ -1,23 +1,12 @@
 import React from 'react';
-import { Phone, Mail, MapPin, ExternalLink, HardDrive } from 'lucide-react';
+import { HardDrive, Mail, MapPin, Music2, Phone } from 'lucide-react';
 import { translations } from '../data/mockData';
 
 const Footer = ({ language }) => {
   const t = translations[language];
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const quickLinks = [
-    { key: 'services', id: 'services' },
-    { key: 'serviceRequestTitle', id: 'service-request' },
-    { key: 'priceEstimationTitle', id: 'price-estimation' },
-    { key: 'caseTracking', id: 'case-tracking' },
-    { key: 'contact', id: 'contact' }
+  const socialLinks = [
+    { label: 'TikTok', href: 'https://www.tiktok.com/@datalabgeorgia', icon: Music2 }
   ];
 
   const serviceLinks = [
@@ -48,30 +37,10 @@ const Footer = ({ language }) => {
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-green-500 text-sm font-medium">
-                {language === 'ka' ? 'ონლაინ' : 'Online'}
+                {language === 'ka' ? 'სამუშაო საათები:' : 'Business hours:'}
               </span>
-              <span className="text-gray-400 text-sm">24/7</span>
+              <span className="text-gray-400 text-sm">10:00–19:00</span>
             </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white">
-              {t.quickLinks}
-            </h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.key}>
-                  <button
-                    onClick={() => scrollToSection(link.id)}
-                    className="text-gray-400 hover:text-red-accent transition-colors duration-300 flex items-center group"
-                  >
-                    <span>{t[link.key]}</span>
-                    <ExternalLink className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                </li>
-              ))}
-            </ul>
           </div>
 
           {/* Services */}
@@ -90,6 +59,28 @@ const Footer = ({ language }) => {
             </ul>
           </div>
 
+          {/* Social Links */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-white">
+              {language === 'ka' ? 'გამოგვყევით' : 'Follow us'}
+            </h3>
+            <ul className="space-y-3">
+              {socialLinks.map(({ label, href, icon: Icon }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center text-gray-400 transition-colors duration-300 hover:text-red-accent"
+                  >
+                    <Icon className="mr-2 h-5 w-5 text-red-accent" />
+                    <span>{label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Contact Info */}
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-white">
@@ -99,20 +90,18 @@ const Footer = ({ language }) => {
               <div className="flex items-start space-x-3">
                 <Phone className="w-5 h-5 text-red-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-white font-medium">+995 XXX XXX XXX</p>
-                  <p className="text-gray-400 text-sm">
-                    {language === 'ka' ? '24/7 ხელმისაწვდომი' : 'Available 24/7'}
-                  </p>
+                  <a href="tel:+995574001930" className="font-medium text-white transition-colors duration-300 hover:text-red-accent">
+                    +995 574 00 19 30
+                  </a>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
                 <Mail className="w-5 h-5 text-red-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-white font-medium">info@datalabgeorgia.ge</p>
-                  <p className="text-gray-400 text-sm">
-                    {language === 'ka' ? 'სწრაფი პასუხი' : 'Quick response'}
-                  </p>
+                  <a href="mailto:info@datalabgeorgia.ge" className="font-medium text-white transition-colors duration-300 hover:text-red-accent">
+                    info@datalabgeorgia.ge
+                  </a>
                 </div>
               </div>
 
@@ -120,10 +109,7 @@ const Footer = ({ language }) => {
                 <MapPin className="w-5 h-5 text-red-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-white font-medium">
-                    {language === 'ka' ? 'თბილისი, საქართველო' : 'Tbilisi, Georgia'}
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    {language === 'ka' ? 'ოფისში ვიზიტი' : 'Office visits'}
+                    {language === 'ka' ? 'თბილისი, ცოტნე დადიანის 7ბ' : '7b Tsotne Dadiani St., Tbilisi'}
                   </p>
                 </div>
               </div>
@@ -135,7 +121,7 @@ const Footer = ({ language }) => {
         <div className="border-t border-gray-800 pt-8 mt-12">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              © 2024 DataLab Georgia. {t.allRightsReserved}
+              © {new Date().getFullYear()} DataLab Georgia. {t.allRightsReserved}
             </div>
           </div>
         </div>

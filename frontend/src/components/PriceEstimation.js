@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, DollarSign, Clock } from 'lucide-react';
+import { Calculator, Clock } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -29,15 +29,15 @@ const PriceEstimation = ({ language }) => {
   ];
 
   const problemTypes = [
-    { value: 'logical', labelKa: 'ლოგიკური დაზიანება', labelEn: 'Logical Damage', multiplier: 1 },
-    { value: 'physical', labelKa: 'ფიზიკური დაზიანება', labelEn: 'Physical Damage', multiplier: 1.5 },
-    { value: 'water', labelKa: 'წყლით დაზიანება', labelEn: 'Water Damage', multiplier: 2 },
-    { value: 'fire', labelKa: 'ცეცხლით დაზიანება', labelEn: 'Fire Damage', multiplier: 2.5 }
+    { value: 'physical', labelKa: 'ფიზიკური დაზიანება', labelEn: 'Physical Damage' },
+    { value: 'deleted_formatted', labelKa: 'წაშლა / დაფორმატება', labelEn: 'Deleted / Formatted' },
+    { value: 'system', labelKa: 'სისტემური დაზიანება', labelEn: 'System Damage' },
+    { value: 'unread', labelKa: 'არ იკითხება / ვერ აღიქვამს', labelEn: 'Unreadable / Not Detected' }
   ];
 
   const urgencyLevels = [
     { value: 'standard', labelKa: 'სტანდარტული (5-7 დღე)', labelEn: 'Standard (5-7 days)', multiplier: 1 },
-    { value: 'urgent', labelKa: 'ეხლა (2-3 დღე)', labelEn: 'Urgent (2-3 days)', multiplier: 1.5 },
+    { value: 'urgent', labelKa: 'არასტანდარტული (1-2 დღე)', labelEn: 'Non-standard (1-2 days)', multiplier: 1.5 },
     { value: 'emergency', labelKa: 'გადაუდებელი (24 საათი)', labelEn: 'Emergency (24 hours)', multiplier: 2 }
   ];
 
@@ -205,7 +205,9 @@ const PriceEstimation = ({ language }) => {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-2xl text-white flex items-center">
-                <DollarSign className="w-6 h-6 text-red-accent mr-3" />
+                <span className="mr-3 inline-flex h-6 w-6 items-center justify-center text-xl font-bold text-red-accent" aria-hidden="true">
+                  ₾
+                </span>
                 {language === 'ka' ? 'შეფასების შედეგი' : 'Estimation Result'}
               </CardTitle>
             </CardHeader>

@@ -125,6 +125,14 @@ class WebsiteRequestReview(BaseModel):
     target_ticket_code: Optional[int] = Field(default=None, ge=10001)
 
 
+class InvoiceSellerConfig(BaseModel):
+    name: str
+    legal_status: str
+    identification_number: str
+    iban: str
+    bank_name: str
+
+
 class PriceEstimateRequest(BaseModel):
     device_type: Literal["hdd", "ssd", "raid", "usb", "sd"]
     problem_type: Literal["physical", "deleted_formatted", "system", "unread"]
@@ -829,6 +837,18 @@ async def delete_ticket(ticket_id: str, user=Depends(auth.current_user)):
     if not ok:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return {"success": True}
+
+
+@api_router.get("/invoices/config", response_model=InvoiceSellerConfig)
+async def invoice_seller_config(user=Depends(auth.current_user)):
+    _require_role(user, UserRole.admin)
+    return InvoiceSellerConfig(
+        name=os.environ.get("INVOICE_SELLER_NAME", "DataLab Georgia").strip(),
+        legal_status=os.environ.get("INVOICE_SELLER_STATUS", "მცირე მეწარმე").strip(),
+        identification_number=os.environ.get("INVOICE_SELLER_ID", "").strip(),
+        iban=os.environ.get("INVOICE_SELLER_IBAN", "").strip(),
+        bank_name=os.environ.get("INVOICE_SELLER_BANK", "თიბისი ბანკი").strip(),
+    )
 
 
 @api_router.get("/invoices", response_model=List[Invoice])

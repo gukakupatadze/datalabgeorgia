@@ -187,6 +187,10 @@ export const ticketsApi = {
 };
 
 export const invoicesApi = {
+  config: async () => {
+    const { data } = await http.get("/invoices/config");
+    return data;
+  },
   list: async () => {
     const { data } = await http.get("/invoices");
     return data;

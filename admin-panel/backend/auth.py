@@ -237,6 +237,13 @@ class AuthService:
                     }
                 },
             )
+            legacy = await self.users.find_one(
+                {"email": "admin@example.com"}, {"_id": 0, "id": 1}
+            )
+            if legacy:
+                await self.sessions.delete_many({"user_id": legacy.get("id")})
+                await self.users.delete_one({"email": "admin@example.com"})
+
             if initial_password_hash:
                 await self.users.update_one(
                     {"email": self.settings.initial_admin_email},

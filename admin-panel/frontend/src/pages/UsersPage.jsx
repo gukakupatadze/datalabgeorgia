@@ -136,7 +136,7 @@ export default function UsersPage() {
         </aside>
 
         <main className="crm-scroll min-w-0 flex-1 overflow-auto bg-muted/20">
-          <div className="mx-auto grid w-full max-w-6xl gap-5 p-4 lg:grid-cols-[340px_1fr] lg:p-6">
+          <div className="mx-auto grid w-full max-w-7xl gap-5 p-4 lg:grid-cols-[300px_minmax(0,1fr)] lg:p-6">
         {pendingUsers.length ? (
           <section className="overflow-hidden rounded-xl border border-amber-500/30 bg-card shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between border-b border-amber-500/20 bg-amber-500/10 px-4 py-3">

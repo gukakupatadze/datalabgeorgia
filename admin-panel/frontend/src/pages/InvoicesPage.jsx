@@ -9,7 +9,6 @@ import {
   ChevronRight,
   FileCheck2,
   FileClock,
-  FileText,
   Package,
   Plus,
   Printer,
@@ -63,20 +62,19 @@ const COPY = {
     issueInvoice: "ინვოისის გამოწერა",
     preview: "ინვოისის ვიზუალი",
     invoice: "ინვოისი",
-    seller: "მომწოდებელი",
+    seller: "მომსახურების გამწევი",
     sellerName: "DataLab Georgia",
-    entrepreneur: "მცირე მეწარმის მონაცემები დაემატება",
-    bank: "ბანკის ანგარიში დაემატება",
-    buyer: "მყიდველი",
+    entrepreneur: "სამართლებრივი სტატუსი",
+    bank: "საბანკო ანგარიში",
+    buyer: "შემსყიდველი",
     description: "დასახელება",
     quantity: "რ-ბა",
     unitPrice: "ერთ. ფასი",
     sum: "თანხა",
     subtotal: "ჯამი",
-    payable: "გადასახდელი",
+    payable: "ინვოისის ჯამური ღირებულება",
     currency: "ყველა თანხა მოცემულია ლარში (₾)",
     noItems: "ინვოისის სანახავად მონიშნეთ მინიმუმ ერთი მოწყობილობა.",
-    databaseBacked: "ინვოისები ინახება ბაზაში და refresh-ის შემდეგაც რჩება.",
     searchPlaceholder: "ინვოისის ან ტიკეტის ძიება...",
     saved: "ინვოისის მონახაზი შენახულია",
     issuedToast: "ინვოისი გამოწერილია",
@@ -96,6 +94,14 @@ const COPY = {
     internalNote: "შიდა შენიშვნა",
     noNote: "შენიშვნა არ არის",
     print: "PDF / ბეჭდვა",
+    identification: "საიდენტიფიკაციო ნომერი",
+    bankName: "ბანკი",
+    paymentMethod: "ანგარიშსწორება",
+    bankTransfer: "საბანკო გადარიცხვა",
+    paymentPurpose: "გადახდის დანიშნულება",
+    responsible: "პასუხისმგებელი პირი",
+    signature: "ხელმოწერა",
+    electronicNote: "ინვოისი მომზადებულია ელექტრონულად.",
   },
   en: {
     back: "Back to CRM",
@@ -127,20 +133,19 @@ const COPY = {
     issueInvoice: "Issue invoice",
     preview: "Invoice preview",
     invoice: "INVOICE",
-    seller: "Supplier",
+    seller: "Service provider",
     sellerName: "DataLab Georgia",
-    entrepreneur: "Small entrepreneur details will be added",
-    bank: "Bank account details will be added",
-    buyer: "Buyer",
+    entrepreneur: "Legal status",
+    bank: "Bank account",
+    buyer: "Purchaser",
     description: "Description",
     quantity: "Qty",
     unitPrice: "Unit price",
     sum: "Amount",
     subtotal: "Subtotal",
-    payable: "Amount due",
+    payable: "Invoice total",
     currency: "All amounts are in Georgian Lari (₾)",
     noItems: "Select at least one device to preview the invoice.",
-    databaseBacked: "Invoices are stored in the database and remain after refresh.",
     searchPlaceholder: "Search invoice or ticket...",
     saved: "Invoice draft saved",
     issuedToast: "Invoice issued",
@@ -160,6 +165,14 @@ const COPY = {
     internalNote: "Internal note",
     noNote: "No note",
     print: "PDF / Print",
+    identification: "Identification number",
+    bankName: "Bank",
+    paymentMethod: "Payment method",
+    bankTransfer: "Bank transfer",
+    paymentPurpose: "Payment reference",
+    responsible: "Responsible person",
+    signature: "Signature",
+    electronicNote: "This invoice was prepared electronically.",
   },
 };
 
@@ -216,31 +229,26 @@ function SummaryCard({ icon: Icon, label, value, tone }) {
   );
 }
 
-function InvoiceDocument({ invoice, c }) {
+function InvoiceDocument({ invoice, c, seller }) {
   const lines = invoice?.lines || [];
   const total = invoice?.total_amount ?? lines.reduce((sum, line) => sum + Number(line.amount ?? line.unit_price ?? 0), 0);
+  const invoiceNumber = invoice?.invoice_number || invoice?.ticket_code || "—";
   return (
-    <div className="min-h-[760px] w-full overflow-hidden rounded-sm border bg-white text-slate-900 shadow-xl print:min-h-0 print:border-0 print:shadow-none">
-      <div className="h-2 bg-slate-950" />
+    <div className="min-h-[760px] w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-slate-900 shadow-xl print:min-h-0 print:border-0 print:shadow-none">
+      <div className="h-2 bg-[hsl(350_67%_30%)]" />
       <div className="p-7 sm:p-10">
         <div className="flex items-start justify-between gap-6">
-          <div className="flex items-center gap-2"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500 text-white"><ReceiptText className="h-5 w-5" /></div><div><p className="text-lg font-black tracking-tight">DataLab Georgia</p><p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Data Recovery</p></div></div>
-          <div className="text-right"><h2 className="text-2xl font-black tracking-tight">{c.invoice}</h2><p className="mt-1 text-sm font-bold text-red-500">№ {invoice?.invoice_number || invoice?.ticket_code || "—"}</p></div>
+          <div className="flex items-center gap-3"><img src="/images/datalab-logo.png" alt="DataLab Georgia" className="h-12 w-12 rounded-xl object-contain" /><div><p className="text-lg font-black tracking-tight">DataLab Georgia</p><p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Data Recovery</p></div></div>
+          <div className="text-right"><h2 className="text-2xl font-black tracking-tight">{c.invoice}</h2><p className="mt-1 text-sm font-bold text-[hsl(350_67%_36%)]">№ {invoiceNumber}</p></div>
         </div>
-        <div className="mt-8 grid gap-6 border-y border-slate-200 py-5 sm:grid-cols-2">
-          <div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.seller}</p><p className="mt-2 text-sm font-bold">{c.sellerName}</p><p className="mt-1 text-xs text-slate-500">{c.entrepreneur}</p><p className="mt-1 text-xs text-slate-500">{c.bank}</p></div>
-          <div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.buyer}</p><p className="mt-2 text-sm font-bold">{invoice?.customer_name || "—"}</p><p className="mt-1 text-xs text-slate-500">{invoice?.customer_type === "legal" ? `${c.taxId}: ${invoice?.tax_id || "—"}` : c.physical}</p><p className="mt-1 text-xs text-slate-500">{c.phone}: {invoice?.customer_phone || "—"}</p></div>
+        <div className="mt-8 grid overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-2">
+          <section className="p-5 sm:border-r sm:border-slate-200"><p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(350_67%_36%)]">{c.seller}</p><p className="mt-3 text-base font-black">{seller.name || "—"}</p><dl className="mt-3 space-y-1.5 text-xs text-slate-600"><div className="flex gap-2"><dt className="font-semibold">{c.entrepreneur}:</dt><dd>{seller.legal_status || "—"}</dd></div><div className="flex gap-2"><dt className="font-semibold">{c.identification}:</dt><dd>{seller.identification_number || "—"}</dd></div><div className="flex gap-2"><dt className="font-semibold">{c.bankName}:</dt><dd>{seller.bank_name || "—"}</dd></div><div className="flex gap-2"><dt className="font-semibold">{c.bank}:</dt><dd className="break-all font-mono">{seller.iban || "—"}</dd></div></dl></section>
+          <section className="bg-slate-50/70 p-5"><p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(350_67%_36%)]">{c.buyer}</p><p className="mt-3 text-base font-black">{invoice?.customer_name || "—"}</p><dl className="mt-3 space-y-1.5 text-xs text-slate-600"><div className="flex gap-2"><dt className="font-semibold">{c.phone}:</dt><dd>{invoice?.customer_phone || "—"}</dd></div>{invoice?.customer_type === "legal" ? <div className="flex gap-2"><dt className="font-semibold">{c.taxId}:</dt><dd>{invoice?.tax_id || "—"}</dd></div> : <div>{c.physical}</div>}</dl></section>
         </div>
-        {lines.length ? (
-          <div className="mt-7 overflow-hidden rounded-lg border border-slate-200">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-white"><tr><th className="px-4 py-3 font-semibold">#</th><th className="px-3 py-3 font-semibold">{c.description}</th><th className="px-3 py-3 text-center font-semibold">{c.quantity}</th><th className="px-3 py-3 text-right font-semibold">{c.unitPrice}</th><th className="px-4 py-3 text-right font-semibold">{c.sum}</th></tr></thead>
-              <tbody>{lines.map((line, index) => <tr key={line.item_id || index} className="border-b border-slate-100 last:border-0"><td className="px-4 py-4 text-slate-400">{index + 1}</td><td className="px-3 py-4"><p className="font-bold">{line.description}</p><p className="mt-1 text-[11px] text-slate-500">{line.device}</p></td><td className="px-3 py-4 text-center">{line.quantity || 1}</td><td className="px-3 py-4 text-right">{GEL.format(Number(line.unit_price) || 0)} ₾</td><td className="px-4 py-4 text-right font-bold">{GEL.format(Number(line.amount ?? line.unit_price) || 0)} ₾</td></tr>)}</tbody>
-            </table>
-          </div>
-        ) : <div className="mt-7 rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">{c.noItems}</div>}
-        <div className="mt-6 ml-auto w-full max-w-xs space-y-3"><div className="flex justify-between text-sm text-slate-500"><span>{c.subtotal}</span><span>{GEL.format(total)} ₾</span></div><Separator className="bg-slate-200" /><div className="flex items-end justify-between"><span className="text-sm font-bold">{c.payable}</span><span className="text-2xl font-black">{GEL.format(total)} ₾</span></div></div>
-        <div className="mt-12 border-t border-slate-200 pt-5"><p className="text-[10px] text-slate-400">{c.currency}</p><p className="mt-1 text-[10px] text-slate-400">DataLab Georgia · datalabgeorgia.ge</p></div>
+        {lines.length ? <div className="mt-7 overflow-hidden rounded-xl border border-slate-200"><table className="w-full text-left text-xs"><thead className="bg-slate-950 text-white"><tr><th className="px-4 py-3">#</th><th className="px-3 py-3">{c.description}</th><th className="px-3 py-3 text-center">{c.quantity}</th><th className="px-3 py-3 text-right">{c.unitPrice}</th><th className="px-4 py-3 text-right">{c.sum}</th></tr></thead><tbody>{lines.map((line, index) => <tr key={line.item_id || index} className="border-b border-slate-100 last:border-0"><td className="px-4 py-4 text-slate-400">{index + 1}</td><td className="px-3 py-4"><p className="font-bold">{line.description}</p><p className="mt-1 text-[11px] text-slate-500">{line.device}</p></td><td className="px-3 py-4 text-center">{line.quantity || 1}</td><td className="px-3 py-4 text-right">{GEL.format(Number(line.unit_price) || 0)} ₾</td><td className="px-4 py-4 text-right font-bold">{GEL.format(Number(line.amount ?? line.unit_price) || 0)} ₾</td></tr>)}</tbody></table></div> : <div className="mt-7 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">{c.noItems}</div>}
+        <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_320px]"><div className="rounded-xl bg-slate-50 p-4 text-xs text-slate-600"><p><span className="font-bold">{c.paymentMethod}:</span> {c.bankTransfer}</p><p className="mt-2"><span className="font-bold">{c.paymentPurpose}:</span> {c.invoice} № {invoiceNumber}</p><p className="mt-2 font-mono">{seller.iban || "—"}</p></div><div className="rounded-xl bg-[hsl(350_67%_30%)] p-5 text-white"><div className="flex items-end justify-between gap-4"><span className="text-xs font-semibold opacity-80">{c.payable}</span><span className="whitespace-nowrap text-2xl font-black">{GEL.format(total)} ₾</span></div></div></div>
+        <div className="mt-10 grid items-end gap-8 border-t border-slate-200 pt-6 sm:grid-cols-[1fr_220px]"><div><p className="text-xs text-slate-500">{c.responsible}</p><p className="mt-1 text-sm font-bold">{seller.name || "—"}</p><p className="mt-3 text-[10px] text-slate-400">{c.electronicNote}</p></div><div><div className="h-9 border-b border-slate-400" /><p className="mt-1 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-400">{c.signature}</p></div></div>
+        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4"><p className="text-[10px] text-slate-400">{c.currency}</p><p className="text-[10px] text-slate-400">datalabgeorgia.ge</p></div>
       </div>
     </div>
   );
@@ -263,6 +271,8 @@ export default function InvoicesPage() {
 
   const ticketsQuery = useQuery({ queryKey: ["tickets", "invoice-options"], queryFn: () => ticketsApi.list({}) });
   const invoicesQuery = useQuery({ queryKey: ["invoices"], queryFn: invoicesApi.list });
+  const sellerQuery = useQuery({ queryKey: ["invoices", "config"], queryFn: invoicesApi.config });
+  const seller = sellerQuery.data || { name: "DataLab Georgia", legal_status: "", identification_number: "", iban: "", bank_name: "" };
   const ticketOptions = useMemo(() => (ticketsQuery.data || []).map(invoiceTicket), [ticketsQuery.data]);
   const selectedTicket = ticketOptions.find((ticket) => ticket.id === ticketId) || null;
 
@@ -338,7 +348,7 @@ export default function InvoicesPage() {
 
   return (
     <>
-      {printInvoice ? <div className="hidden print:block"><InvoiceDocument invoice={printInvoice} c={c} /></div> : null}
+      {printInvoice ? <div className="hidden print:block"><InvoiceDocument invoice={printInvoice} c={c} seller={seller} /></div> : null}
       <div className="flex h-screen flex-col overflow-hidden bg-background print:hidden">
         <Topbar title={t("invoices.title")} search={headerSearch} onSearch={setHeaderSearch} onSearchSubmit={() => setActiveView("list")} onCreate={() => navigate("/", { state: { openCreate: true } })} />
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -349,7 +359,6 @@ export default function InvoicesPage() {
               <button type="button" onClick={() => setActiveView("new")} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors md:w-full", activeView === "new" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground")}><Plus className="h-4 w-4" />{c.newInvoice}</button>
               <button type="button" onClick={() => setActiveView("list")} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors md:w-full", activeView === "list" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground")}><ReceiptText className="h-4 w-4" />{c.list}</button>
             </nav>
-            <div className="mt-5 hidden rounded-xl border bg-background p-3 md:block"><div className="flex items-center gap-2 text-xs font-semibold"><FileText className="h-4 w-4 text-primary" />{c.list}</div><p className="mt-2 text-[11px] leading-5 text-muted-foreground">{c.databaseBacked}</p></div>
           </aside>
 
           <main className="crm-scroll min-w-0 flex-1 overflow-auto bg-muted/20">
@@ -373,7 +382,7 @@ export default function InvoicesPage() {
                           <div className="min-w-0 flex-1"><p className="font-bold">№ {invoice.invoice_number}</p><p className="truncate text-xs text-muted-foreground">#{invoice.ticket_code} · {invoice.customer_name}</p>{invoice.note ? <p className="mt-1 truncate text-xs font-medium text-amber-700 dark:text-amber-400">{c.notes}: {invoice.note}</p> : null}</div>
                           <StatusPill status={invoice.status} c={c} /><p className="w-28 text-right font-bold tabular-nums">{GEL.format(invoice.total_amount)} ₾</p><ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform", expanded && "rotate-90")} />
                         </button>
-                        {expanded ? <div className="border-t bg-muted/20 p-4 md:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-bold">{c.details}</h2><p className="text-xs text-muted-foreground">{invoice.lines.length} {c.itemsCount}</p></div><div className="flex flex-wrap gap-2">{invoice.status === "draft" ? <Button size="sm" variant="outline" onClick={() => statusMutation.mutate({ id: invoice.id, status: "issued" })}>{c.markIssued}</Button> : null}{invoice.status !== "paid" ? <Button size="sm" variant="outline" onClick={() => statusMutation.mutate({ id: invoice.id, status: "paid" })}>{c.markPaid}</Button> : null}<Button size="sm" className="gap-2" onClick={() => startPrint(invoice)}><Printer className="h-4 w-4" />{c.print}</Button></div></div><div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]"><InvoiceDocument invoice={invoice} c={c} /><Card><CardContent className="p-4"><p className="text-xs font-semibold uppercase text-muted-foreground">{c.internalNote}</p><p className="mt-2 whitespace-pre-wrap text-sm">{invoice.note || c.noNote}</p></CardContent></Card></div></div> : null}
+                        {expanded ? <div className="border-t bg-muted/20 p-4 md:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-bold">{c.details}</h2><p className="text-xs text-muted-foreground">{invoice.lines.length} {c.itemsCount}</p></div><div className="flex flex-wrap gap-2">{invoice.status === "draft" ? <Button size="sm" variant="outline" onClick={() => statusMutation.mutate({ id: invoice.id, status: "issued" })}>{c.markIssued}</Button> : null}{invoice.status !== "paid" ? <Button size="sm" variant="outline" onClick={() => statusMutation.mutate({ id: invoice.id, status: "paid" })}>{c.markPaid}</Button> : null}<Button size="sm" className="gap-2" onClick={() => startPrint(invoice)}><Printer className="h-4 w-4" />{c.print}</Button></div></div><div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]"><InvoiceDocument invoice={invoice} c={c} seller={seller} /><Card><CardContent className="p-4"><p className="text-xs font-semibold uppercase text-muted-foreground">{c.internalNote}</p><p className="mt-2 whitespace-pre-wrap text-sm">{invoice.note || c.noNote}</p></CardContent></Card></div></div> : null}
                       </article>;
                     })}</div>
                   ) : <p className="p-8 text-center text-sm text-muted-foreground">{c.emptyInvoices}</p>}
@@ -388,7 +397,7 @@ export default function InvoicesPage() {
                       <div className="space-y-2"><Label htmlFor="invoice-notes">{c.notes}</Label><Input id="invoice-notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder={c.notesPlaceholder} /></div><Separator /><div className="flex flex-wrap justify-end gap-2"><Button variant="outline" className="gap-2" disabled={createMutation.isPending} onClick={() => saveInvoice("draft")}><Save className="h-4 w-4" />{c.saveDraft}</Button><Button className="gap-2" disabled={createMutation.isPending} onClick={() => saveInvoice("issued")}><ReceiptText className="h-4 w-4" />{c.issueInvoice}</Button></div>
                     </>}
                   </CardContent></Card>
-                  <div className="space-y-3 xl:sticky xl:top-5"><div className="flex items-center justify-between"><h2 className="font-bold">{c.preview}</h2><Button variant="outline" size="sm" className="gap-2" disabled={!previewInvoice?.lines.length} onClick={() => startPrint(previewInvoice)}><Printer className="h-4 w-4" />{c.print}</Button></div><InvoiceDocument invoice={previewInvoice} c={c} /></div>
+                  <div className="space-y-3 xl:sticky xl:top-5"><div className="flex items-center justify-between"><h2 className="font-bold">{c.preview}</h2><Button variant="outline" size="sm" className="gap-2" disabled={!previewInvoice?.lines.length} onClick={() => startPrint(previewInvoice)}><Printer className="h-4 w-4" />{c.print}</Button></div><InvoiceDocument invoice={previewInvoice} c={c} seller={seller} /></div>
                 </div>
               )}
             </div>

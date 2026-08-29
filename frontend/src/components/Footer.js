@@ -1,12 +1,15 @@
 import React from 'react';
-import { Mail, MapPin, Music2, Phone } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin, Music2, Phone, Youtube } from 'lucide-react';
 import { translations } from '../data/mockData';
 
 const Footer = ({ language }) => {
   const t = translations[language];
 
   const socialLinks = [
-    { label: 'TikTok', href: 'https://www.tiktok.com/@datalabgeorgia', icon: Music2 }
+    { label: 'Facebook', href: null, icon: Facebook },
+    { label: 'Instagram', href: null, icon: Instagram },
+    { label: 'TikTok', href: 'https://www.tiktok.com/@datalabgeorgia', icon: Music2 },
+    { label: 'YouTube', href: null, icon: Youtube }
   ];
 
   const serviceLinks = [
@@ -65,15 +68,15 @@ const Footer = ({ language }) => {
             <ul className="space-y-3">
               {socialLinks.map(({ label, href, icon: Icon }) => (
                 <li key={label}>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center text-gray-400 transition-colors duration-300 hover:text-red-accent"
-                  >
-                    <Icon className="mr-2 h-5 w-5 text-red-accent" />
-                    <span>{label}</span>
-                  </a>
+                  {href ? (
+                    <a href={href} target="_blank" rel="noreferrer" className="flex items-center text-gray-400 transition-colors duration-300 hover:text-red-accent">
+                      <Icon className="mr-2 h-5 w-5 text-red-accent" /><span>{label}</span>
+                    </a>
+                  ) : (
+                    <span className="flex items-center text-gray-500" aria-label={`${label} — მალე`}>
+                      <Icon className="mr-2 h-5 w-5 text-red-accent" /><span>{label}</span>
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

@@ -239,13 +239,7 @@ class AuthService:
             )
             if initial_password_hash:
                 await self.users.update_one(
-                    {
-                        "email": self.settings.initial_admin_email,
-                        "$or": [
-                            {"password_hash": None},
-                            {"password_hash": {"$exists": False}},
-                        ],
-                    },
+                    {"email": self.settings.initial_admin_email},
                     {
                         "$set": {
                             "password_hash": initial_password_hash,

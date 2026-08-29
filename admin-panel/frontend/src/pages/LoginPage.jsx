@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, LoaderCircle, LockKeyhole, Wrench } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, LockKeyhole } from "lucide-react";
 import { authApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -98,8 +98,8 @@ export default function LoginPage() {
       <div className="absolute right-4 top-4 flex items-center gap-2"><LanguageSwitcher /><ThemeToggle /></div>
       <section className="relative w-full max-w-[460px] rounded-2xl border bg-card/95 p-6 shadow-2xl shadow-black/10 backdrop-blur sm:p-8">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"><Wrench className="h-5 w-5" /></div>
-          <div><h1 className="text-xl font-bold tracking-tight">RepairDesk</h1><p className="text-xs text-muted-foreground">{t("auth.secureCrm")}</p></div>
+          <img src="/images/datalab-logo.png" alt="DataLab Georgia" className="h-12 w-12 rounded-xl object-contain shadow-sm" />
+          <div><h1 className="text-xl font-bold tracking-tight">DataLab Georgia</h1><p className="text-xs text-muted-foreground">{t("auth.secureCrm")}</p></div>
         </div>
         {oauthError ? <div role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">{t(ERROR_KEYS[oauthError] || "auth.error.failed")}</div> : null}
         {configError ? <div role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">{t("auth.error.server")}</div> : null}

@@ -1,4 +1,4 @@
-import { BarChart3, Bell, ChevronDown, ClipboardList, LogOut, Plus, ReceiptText, Search, UserCog, Wrench } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, ClipboardList, LogOut, Plus, ReceiptText, Search, UserCog } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,7 @@ export function Topbar({ title, search, onSearch, onSearchSubmit, onCreate }) {
   return (
     <header className="flex h-[52px] items-center gap-3 border-b bg-background/80 px-3 backdrop-blur sm:px-4">
       <div className="flex items-center gap-2 shrink-0">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Wrench className="h-4 w-4" />
-        </div>
+        <img src="/images/datalab-logo.png" alt="DataLab Georgia" className="h-8 w-8 rounded-md object-contain" />
         <div className="leading-tight">
           <div className="text-sm font-semibold tracking-tight">
             {t("app.name")}

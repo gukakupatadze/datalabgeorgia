@@ -247,7 +247,6 @@ export default function UsersPage() {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="truncate text-sm font-semibold">{entry.full_name}</p>
-                            {isSelf ? <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">{t("users.you")}</span> : null}
                             {isPrimaryAdmin ? <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{t("users.primaryAdmin")}</span> : null}
                           </div>
                           <p className="truncate text-xs text-muted-foreground">{entry.email}</p>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HardDrive, Mail, MapPin, Music2, Phone } from 'lucide-react';
+import { Mail, MapPin, Music2, Phone } from 'lucide-react';
 import { translations } from '../data/mockData';
 
 const Footer = ({ language }) => {
@@ -24,9 +24,7 @@ const Footer = ({ language }) => {
           {/* Company Info */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-red-accent rounded-lg flex items-center justify-center">
-                <HardDrive className="w-5 h-5 text-white" />
-              </div>
+              <img src="/images/datalab-logo.png" alt="DataLab Georgia" className="h-10 w-10 rounded-lg object-contain" />
               <span className="text-xl font-bold text-white">DataLab Georgia</span>
             </div>
 

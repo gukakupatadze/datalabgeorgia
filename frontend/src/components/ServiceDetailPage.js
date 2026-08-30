@@ -13,8 +13,8 @@ import { SERVICE_DETAILS } from '../data/serviceDetailsData';
 const ICONS = { HardDrive, Zap, Layers3, Usb };
 const SITE_URL = 'https://datalabgeorgia.ge';
 const HOME_META = {
-  title: 'DataLab Georgia - მონაცემთა აღდგენის სერვისი',
-  description: 'DataLab Georgia — მონაცემთა აღდგენის პროფესიონალური სერვისი საქართველოში.'
+  title: 'მონაცემთა აღდგენა თბილისში | DataLab Georgia',
+  description: 'DataLab Georgia — მონაცემთა აღდგენის ლაბორატორია თბილისში. HDD, SSD, RAID/NAS, USB, SD და microSD მოწყობილობებიდან მონაცემების აღდგენა.'
 };
 
 function setHeadElement(selector, attributes) {

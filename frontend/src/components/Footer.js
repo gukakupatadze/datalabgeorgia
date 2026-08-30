@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Mail, MapPin, Music2, Phone, Youtube } from 'lucide-react';
 import { translations } from '../data/mockData';
 
@@ -13,11 +14,10 @@ const Footer = ({ language }) => {
   ];
 
   const serviceLinks = [
-    { labelKa: 'HDD აღდგენა', labelEn: 'HDD Recovery' },
-    { labelKa: 'SSD აღდგენა', labelEn: 'SSD Recovery' },
-    { labelKa: 'RAID აღდგენა', labelEn: 'RAID Recovery' },
-    { labelKa: 'უსბ აღდგენა', labelEn: 'USB Recovery' },
-    { labelKa: 'SD ბარათი', labelEn: 'SD Card Recovery' }
+    { labelKa: 'HDD აღდგენა', labelEn: 'HDD Recovery', href: '/services/hdd-recovery' },
+    { labelKa: 'SSD აღდგენა', labelEn: 'SSD Recovery', href: '/services/ssd-recovery' },
+    { labelKa: 'RAID აღდგენა', labelEn: 'RAID Recovery', href: '/services/raid-recovery' },
+    { labelKa: 'USB, SD და microSD აღდგენა', labelEn: 'USB, SD & microSD Recovery', href: '/services/usb-recovery' }
   ];
 
   return (
@@ -52,9 +52,9 @@ const Footer = ({ language }) => {
             <ul className="space-y-3">
               {serviceLinks.map((service, index) => (
                 <li key={index}>
-                  <span className="text-gray-400 hover:text-red-accent transition-colors duration-300 cursor-pointer">
+                  <Link to={service.href} className="text-gray-400 hover:text-red-accent transition-colors duration-300">
                     {language === 'ka' ? service.labelKa : service.labelEn}
-                  </span>
+                  </Link>
                 </li>
               ))}
             </ul>

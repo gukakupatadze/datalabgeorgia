@@ -1,120 +1,88 @@
 import React from 'react';
-import { HardDrive, Shield, Wrench, Search, ChevronRight, Camera, Zap, Database, Cpu, Server, CreditCard, Usb, Layers } from 'lucide-react';
-import { Button } from './ui/button';
+import {
+  Camera, ChevronRight, Cpu, CreditCard, Database, HardDrive,
+  Layers, Search, Server, Shield, Usb, Wrench, Zap
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { translations, services } from '../data/mockData';
-import { useNavigate } from 'react-router-dom';
+
+const serviceRoutes = {
+  1: '/services/hdd-recovery',
+  2: '/services/ssd-recovery',
+  3: '/services/usb-recovery',
+  4: '/services/raid-recovery'
+};
+
+const icons = {
+  HardDrive,
+  Shield,
+  Wrench,
+  Search,
+  Camera,
+  Zap,
+  Database,
+  Cpu,
+  Server,
+  CreditCard,
+  Usb,
+  Layers
+};
 
 const Services = ({ language }) => {
   const t = translations[language];
-  const navigate = useNavigate();
-
-  const serviceRoutes = {
-    1: '/services/hdd-recovery',
-    2: '/services/ssd-recovery',
-    3: '/services/usb-recovery',
-    4: '/services/raid-recovery'
-  };
-
-  const openServiceDetails = (serviceId) => {
-    navigate(serviceRoutes[serviceId]);
-  };
-
-  const getIcon = (iconName) => {
-    const icons = {
-      HardDrive,
-      Shield,
-      Wrench,
-      Search,
-      Camera,
-      Zap,        // ელექტრული/სწრაფი - კარგია SSD-ისთვის
-      Database,   // მონაცემები
-      Cpu,        // პროცესორი/ჩიპი
-      Server,     // სერვერი/ტექნოლოგია
-      CreditCard, // ბარათი
-      Usb,        // USB icon - პირდაპირ USB-ისთვის
-      Layers      // ფენები - კარგია RAID-ისთვის (მრავალი ფენა)
-    };
-    return icons[iconName] || HardDrive;
-  };
 
   return (
-    <section id="services" className="py-20 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            {t.servicesTitle}
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            {t.servicesSubtitle}
-          </p>
+    <section id="services" className="bg-gray-900 py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-16 text-center">
+          <h2 className="mb-6 text-4xl font-bold text-white md:text-5xl">{t.servicesTitle}</h2>
+          <p className="mx-auto max-w-3xl text-xl text-gray-300">{t.servicesSubtitle}</p>
         </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {services.map((service) => {
-            const IconComponent = getIcon(service.icon);
+            const IconComponent = icons[service.icon] || HardDrive;
+            const route = serviceRoutes[service.id];
+            const title = t[service.titleKey];
             return (
-              <Card
+              <Link
                 key={service.id}
-                className="service-card bg-gray-800 border-gray-700 hover:border-red-accent/50 group cursor-pointer"
-                role="link"
-                tabIndex={0}
-                aria-label={`${t[service.titleKey]} — ${language === 'ka' ? 'დეტალურად' : 'Learn More'}`}
-                onClick={() => openServiceDetails(service.id)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openServiceDetails(service.id);
-                  }
-                }}
+                to={route}
+                aria-label={`${title} — ${language === 'ka' ? 'დეტალურად' : 'Learn more'}`}
+                className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-accent focus-visible:ring-offset-4 focus-visible:ring-offset-gray-900"
               >
-                <CardHeader className="text-center pb-1">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-accent/10 rounded-full mb-1 mx-auto group-hover:bg-red-accent/20 transition-colors duration-300">
-                    <IconComponent className="w-8 h-8 text-red-accent" />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-white mb-1">
-                    {t[service.titleKey]}
-                  </CardTitle>
-                  <CardDescription className="text-gray-400 mb-1">
-                    {t[service.descKey]}
-                  </CardDescription>
-                </CardHeader>
+                <Card className="service-card group h-full cursor-pointer border-gray-700 bg-gray-800 hover:border-red-accent/50">
+                  <CardHeader className="pb-1 text-center">
+                    <div className="mx-auto mb-1 inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-accent/10 transition-colors duration-300 group-hover:bg-red-accent/20">
+                      <IconComponent className="h-8 w-8 text-red-accent" />
+                    </div>
+                    <CardTitle className="mb-1 text-xl font-bold text-white">{title}</CardTitle>
+                    <CardDescription className="mb-1 text-gray-400">{t[service.descKey]}</CardDescription>
+                  </CardHeader>
 
-                <CardContent className="pt-2">
-                  <div className="space-y-2 mb-10 mt-4">
-                    {(language === 'ka' ? service.features : service.features_en || service.features).map((feature, index) => (
-                      <div key={index} className="flex items-center text-sm text-gray-300">
-                        <ChevronRight className="w-4 h-4 text-red-accent mr-2 flex-shrink-0" />
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between mt-8">
-                    <Badge variant="outline" className="border-red-accent text-red-accent">
-                      {service.price}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-accent hover:text-white hover:bg-red-accent"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        openServiceDetails(service.id);
-                      }}
-                    >
-                      {language === 'ka' ? 'დეტალურად' : 'Learn More'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  <CardContent className="pt-2">
+                    <div className="mb-10 mt-4 space-y-2">
+                      {(language === 'ka' ? service.features : service.features_en || service.features).map((feature) => (
+                        <div key={feature} className="flex items-center text-sm text-gray-300">
+                          <ChevronRight className="mr-2 h-4 w-4 shrink-0 text-red-accent" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-8 flex items-center justify-between">
+                      <Badge variant="outline" className="border-red-accent text-red-accent">{service.price}</Badge>
+                      <span className="inline-flex h-8 items-center rounded-md px-3 text-xs font-medium text-red-accent transition-colors group-hover:bg-red-accent group-hover:text-white">
+                        {language === 'ka' ? 'დეტალურად' : 'Learn more'}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>
-
       </div>
     </section>
   );

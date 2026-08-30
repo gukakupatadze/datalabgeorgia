@@ -9,7 +9,7 @@ export const translations = {
 
     // Hero Section
     heroTitle: "მონაცემთა აღდგენა",
-    heroSubtitle: "DataLab Georgia — მონაცემთა აღდგენის პროფესიონალური სერვისი საქართველოში.",
+    heroSubtitle: "DataLab Georgia — მონაცემთა აღდგენის სპეციალიზებული ლაბორატორია საქართველოში. ვახორციელებთ მონაცემების აღდგენას HDD, SSD, RAID/NAS, USB Flash, SD და microSD მოწყობილობებიდან — როგორც ლოგიკური, ისე ფიზიკური დაზიანების შემთხვევაში.",
     getStarted: "დაიწყეთ ახლავე",
     freeConsultation: "უფასო კონსულტაცია",
 

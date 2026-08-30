@@ -5,7 +5,7 @@ const STORAGE_KEY = "crm_lang";
 
 const translations = {
   ka: {
-    "app.name": "RepairDesk",
+    "app.name": "DataLab Georgia",
 
     "lang.ka": "ქართული",
     "lang.en": "English",
@@ -14,7 +14,7 @@ const translations = {
     "auth.title": "სისტემაში შესვლა",
     "auth.subtitle": "გამოიყენეთ ადმინისტრატორის მიერ დაშვებული Gmail ანგარიში.",
     "auth.googleButton": "Google-ით შესვლა",
-    "auth.passwordNote": "Google-ის პაროლი RepairDesk-ში არასოდეს ინახება.",
+    "auth.passwordNote": "Google-ის პაროლი DataLab Georgia-ში არასოდეს ინახება.",
     "auth.allowlistNote": "წვდომა აქვთ მხოლოდ წინასწარ დამატებულ თანამშრომლებს.",
     "auth.setupRequired": "Google ავტორიზაცია ჯერ კონფიგურირებული არ არის. შეავსეთ backend-ის .env პარამეტრები.",
     "auth.logout": "გამოსვლა",
@@ -197,6 +197,7 @@ const translations = {
     "status.picked_up": "გატანილი",
 
     "nav.incoming": "შემოსული",
+    "nav.website": "საიტზე გადასვლა",
     "nav.ticketsPage": "ტიკეტების გვერდი",
     "nav.active": "აქტიური ტიკეტები",
     "nav.group.in_progress": "მიმდინარე",
@@ -375,7 +376,7 @@ const translations = {
   },
 
   en: {
-    "app.name": "RepairDesk",
+    "app.name": "DataLab Georgia",
 
     "lang.ka": "ქართული",
     "lang.en": "English",
@@ -384,7 +385,7 @@ const translations = {
     "auth.title": "Sign in",
     "auth.subtitle": "Use a Gmail account approved by an administrator.",
     "auth.googleButton": "Continue with Google",
-    "auth.passwordNote": "Your Google password is never stored in RepairDesk.",
+    "auth.passwordNote": "Your Google password is never stored in DataLab Georgia.",
     "auth.allowlistNote": "Only pre-approved employees can access the CRM.",
     "auth.setupRequired": "Google authentication is not configured yet. Complete the backend .env settings.",
     "auth.logout": "Sign out",
@@ -567,6 +568,7 @@ const translations = {
     "status.picked_up": "Picked Up",
 
     "nav.incoming": "Incoming",
+    "nav.website": "Open website",
     "nav.ticketsPage": "Tickets page",
     "nav.active": "Active Tickets",
     "nav.group.in_progress": "In Progress",

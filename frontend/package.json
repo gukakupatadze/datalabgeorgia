@@ -62,7 +62,7 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/craco start",
-    "build": "./node_modules/.bin/craco build",
+    "build": "./node_modules/.bin/craco build && node scripts/prerender-pages.cjs",
     "test": "./node_modules/.bin/craco test"
   },
   "browserslist": {
@@ -81,6 +81,7 @@
     "@craco/craco": "^7.1.0",
     "@eslint/js": "9.23.0",
     "autoprefixer": "^10.4.20",
+    "esbuild": "^0.28.2",
     "eslint": "9.23.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jsx-a11y": "6.10.2",

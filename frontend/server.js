@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 
@@ -175,6 +176,14 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     res.status(404).json({ error: 'API endpoint not found' });
   } else {
+    const routePath = req.path.replace(/^\/+|\/+$/g, '');
+    if (routePath && /^[A-Za-z0-9/_-]+$/.test(routePath)) {
+      const prerenderedPage = path.join(__dirname, 'build', `${routePath}.html`);
+      if (fs.existsSync(prerenderedPage)) {
+        res.sendFile(prerenderedPage);
+        return;
+      }
+    }
     res.sendFile(path.join(__dirname, './build/index.html'));
   }
 });

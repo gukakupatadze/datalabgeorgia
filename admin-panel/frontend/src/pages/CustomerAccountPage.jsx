@@ -36,7 +36,7 @@ export default function CustomerAccountPage() {
   return (
     <main className="min-h-screen bg-muted/30">
       <header className="sticky top-0 z-10 flex h-[58px] items-center border-b bg-background/90 px-4 backdrop-blur sm:px-6">
-        <div className="flex items-center gap-2"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Wrench className="h-4 w-4" /></div><span className="text-sm font-bold">RepairDesk</span></div>
+        <div className="flex items-center gap-2"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Wrench className="h-4 w-4" /></div><span className="text-sm font-bold">DataLab Georgia</span></div>
         <div className="ml-auto flex gap-1 sm:gap-2"><LanguageSwitcher /><ThemeToggle /><Button variant="outline" size="sm" className="gap-2 px-2 sm:px-3" aria-label={t("auth.logout")} onClick={signOut}><LogOut className="h-4 w-4" /><span className="hidden sm:inline">{t("auth.logout")}</span></Button></div>
       </header>
       <div className="mx-auto w-full max-w-4xl p-4 sm:p-6">

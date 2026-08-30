@@ -182,8 +182,8 @@ const Contact = ({ language }) => {
       icon: MapPin,
       titleKa: 'მისამართი',
       titleEn: 'Address',
-      valueKa: 'თბილისი, ცოტნე დადიანის 7ბ',
-      valueEn: '7b Tsotne Dadiani St., Tbilisi',
+      valueKa: 'თბილისი, ცოტნე დადიანის 7',
+      valueEn: '7 Tsotne Dadiani St., Tbilisi',
       descKa: '',
       descEn: ''
     },

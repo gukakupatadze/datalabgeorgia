@@ -40,8 +40,8 @@ export const SERVICE_DETAILS = {
       ka: {
         ...sharedKa,
         seo: {
-          title: 'HDD მონაცემთა აღდგენა თბილისში | DataLab Georgia',
-          description: 'HDD მონაცემთა აღდგენა თბილისში — ლოგიკური, მექანიკური და ელექტრონული დაზიანებები, SMART, Bad Sectors, Firmware და ლაბორატორიული სამუშაოები.'
+          title: 'HDD მონაცემთა აღდგენა საქართველოში | DataLab Georgia',
+          description: 'HDD მონაცემთა აღდგენა საქართველოში — ლოგიკური, მექანიკური და ელექტრონული დაზიანებები, SMART, Bad Sectors, Firmware და ლაბორატორიული სამუშაოები.'
         },
         title: 'HDD მონაცემთა აღდგენა',
         hero: [
@@ -181,7 +181,7 @@ export const SERVICE_DETAILS = {
     content: {
       ka: {
         ...sharedKa,
-        seo: { title: 'SSD მონაცემთა აღდგენა თბილისში | DataLab Georgia', description: 'SSD მონაცემთა აღდგენა თბილისში — SATA, M.2, NVMe, Controller, Firmware, NAND Flash, TRIM და ლოგიკური/ელექტრონული დაზიანებები.' },
+        seo: { title: 'SSD მონაცემთა აღდგენა საქართველოში | DataLab Georgia', description: 'SSD მონაცემთა აღდგენა საქართველოში — SATA, M.2, NVMe, Controller, Firmware, NAND Flash, TRIM და ლოგიკური/ელექტრონული დაზიანებები.' },
         title: 'SSD მონაცემთა აღდგენა',
         hero: ['DataLab Georgia-ში ვახორციელებთ მონაცემების აღდგენას SATA, M.2 და NVMe SSD მოწყობილობებიდან.', 'SSD-ის მუშაობის პრინციპი მნიშვნელოვნად განსხვავდება HDD-ისგან. ინფორმაცია ინახება NAND Flash მეხსიერებაში, ხოლო მონაცემების მართვას SSD Controller და Firmware ახორციელებს.', 'ვმუშაობთ როგორც ლოგიკურ დაზიანებებზე, ასევე Controller, Firmware, NAND Flash და ელექტრონული პრობლემების შემთხვევებზე.'],
         trust: ['SATA / M.2', 'NVMe / PCIe', 'Controller / Firmware', 'NAND Flash'],
@@ -269,7 +269,7 @@ export const SERVICE_DETAILS = {
     content: {
       ka: {
         ...sharedKa,
-        seo: { title: 'RAID და NAS მონაცემთა აღდგენა თბილისში | DataLab Georgia', description: 'RAID და NAS მონაცემთა აღდგენა თბილისში — RAID 0, 1, 5, 6, 10, degraded arrays, failed disks და RAID reconstruction.' },
+        seo: { title: 'RAID და NAS მონაცემთა აღდგენა საქართველოში | DataLab Georgia', description: 'RAID და NAS მონაცემთა აღდგენა საქართველოში — RAID 0, 1, 5, 6, 10, degraded arrays, failed disks და RAID reconstruction.' },
         title: 'RAID / NAS მონაცემთა აღდგენა',
         hero: ['DataLab Georgia-ში ვახორციელებთ მონაცემების აღდგენას დაზიანებული RAID მასივებიდან და NAS სისტემებიდან.', 'RAID Recovery ერთ-ერთი ყველაზე კომპლექსური მონაცემთა აღდგენის მიმართულებაა, რადგან ინფორმაცია ერთზე მეტ დისკზე კონკრეტული კონფიგურაციის მიხედვით არის განაწილებული.', 'არასწორმა Rebuild-მა, Disk Order-ის შეცვლამ ან Initialization-მა შეიძლება აღდგენის პროცესი მნიშვნელოვნად გაართულოს.'],
         trust: ['RAID 0 / RAID 1', 'RAID 5 / RAID 6', 'RAID 10 / JBOD', 'NAS Systems'],

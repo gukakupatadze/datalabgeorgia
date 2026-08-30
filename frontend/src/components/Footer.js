@@ -7,8 +7,8 @@ const Footer = ({ language }) => {
   const t = translations[language];
 
   const socialLinks = [
-    { label: 'Facebook', href: null, icon: Facebook },
-    { label: 'Instagram', href: null, icon: Instagram },
+    { label: 'Facebook', href: 'https://www.facebook.com/datalabgeorgia/', icon: Facebook },
+    { label: 'Instagram', href: 'https://www.instagram.com/datalabgeorgia/', icon: Instagram },
     { label: 'TikTok', href: 'https://www.tiktok.com/@datalabgeorgia', icon: Music2 },
     { label: 'YouTube', href: null, icon: Youtube }
   ];
@@ -110,7 +110,7 @@ const Footer = ({ language }) => {
                 <MapPin className="w-5 h-5 text-red-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-white font-medium">
-                    {language === 'ka' ? 'თბილისი, ცოტნე დადიანის 7ბ' : '7b Tsotne Dadiani St., Tbilisi'}
+                    {language === 'ka' ? 'თბილისი, ცოტნე დადიანის 7' : '7 Tsotne Dadiani St., Tbilisi'}
                   </p>
                 </div>
               </div>

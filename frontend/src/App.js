@@ -47,7 +47,7 @@ const ScrollManager = () => {
   return null;
 };
 
-const Home = ({ language, setLanguage }) => (
+export const Home = ({ language, setLanguage }) => (
   <div className="min-h-screen bg-gray-900">
     <Header language={language} setLanguage={setLanguage} />
     <main>

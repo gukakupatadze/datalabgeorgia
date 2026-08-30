@@ -9,12 +9,12 @@ import Footer from './Footer';
 import { Button } from './ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { SERVICE_DETAILS } from '../data/serviceDetailsData';
+import { HOME_SEO, SITE_URL } from '../data/seoMetadata';
 
 const ICONS = { HardDrive, Zap, Layers3, Usb };
-const SITE_URL = 'https://datalabgeorgia.ge';
 const HOME_META = {
-  title: 'მონაცემთა აღდგენა თბილისში | DataLab Georgia',
-  description: 'DataLab Georgia — მონაცემთა აღდგენის ლაბორატორია თბილისში. HDD, SSD, RAID/NAS, USB, SD და microSD მოწყობილობებიდან მონაცემების აღდგენა.'
+  title: HOME_SEO.title,
+  description: HOME_SEO.description
 };
 
 function setHeadElement(selector, attributes) {

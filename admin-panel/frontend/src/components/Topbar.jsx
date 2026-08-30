@@ -1,4 +1,4 @@
-import { BarChart3, Bell, ChevronDown, ClipboardList, LogOut, Plus, ReceiptText, Search, UserCog } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, ClipboardList, ExternalLink, LogOut, Plus, ReceiptText, Search, UserCog } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,10 @@ export function Topbar({ title, search, onSearch, onSearchSubmit, onCreate }) {
   const handleLogout = async () => {
     await logout();
     navigate("/login", { replace: true });
+  };
+
+  const openWebsite = () => {
+    window.open("https://datalabgeorgia.ge/", "_blank", "noopener,noreferrer");
   };
   return (
     <header className="flex h-[52px] items-center gap-3 border-b bg-background/80 px-3 backdrop-blur sm:px-4">
@@ -152,6 +156,11 @@ export function Topbar({ title, search, onSearch, onSearchSubmit, onCreate }) {
                 <DropdownMenuItem onSelect={() => navigate("/requests")}>
                   <Bell />
                   {t("requests.title")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={openWebsite}>
+                  <ExternalLink />
+                  {t("nav.website")}
                 </DropdownMenuItem>
               </>
             ) : null}

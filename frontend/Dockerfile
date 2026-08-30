@@ -3,9 +3,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --legacy-peer-deps --no-audit --no-fund
+    npm ci --legacy-peer-deps --no-audit --no-fund
 
 COPY . ./
 
